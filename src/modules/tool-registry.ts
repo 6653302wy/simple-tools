@@ -1,4 +1,4 @@
-export type ToolModuleSlug = 'timestamp' | 'exchange-rate';
+export type ToolModuleSlug = 'timestamp' | 'exchange-rate' | 'qrcode' | 'base64' | 'json-tools';
 
 export type ToolModule = {
     slug: ToolModuleSlug;
@@ -22,6 +22,27 @@ export const toolModules: ToolModule[] = [
         badge: 'FX',
         title: '汇率转换',
         description: '基于可编辑参考汇率，在常用币种间即时换算。',
+    },
+    {
+        slug: 'qrcode',
+        href: '/modules/qrcode',
+        badge: 'QR',
+        title: '二维码生成与反解',
+        description: '生成二维码图片，或从本地/网络图片中反解析二维码内容。',
+    },
+    {
+        slug: 'base64',
+        href: '/modules/base64',
+        badge: 'B64',
+        title: 'Base64 编解码',
+        description: '支持文字 Base64 转换，以及本地或网络图片转 Base64。',
+    },
+    {
+        slug: 'json-tools',
+        href: '/modules/json-tools',
+        badge: 'JSON',
+        title: 'JSON 校验与格式化',
+        description: '校验 JSON 合法性，并快速格式化或压缩输出。',
     },
 ];
 
