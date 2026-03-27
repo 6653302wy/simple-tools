@@ -1,6 +1,7 @@
 export type ToolModuleSlug = 'timestamp' | 'exchange-rate' | 'qrcode' | 'base64' | 'json-tools';
 
 export type ToolModule = {
+    sort: number;
     slug: ToolModuleSlug;
     href: `/modules/${ToolModuleSlug}`;
     badge: string;
@@ -8,8 +9,9 @@ export type ToolModule = {
     description: string;
 };
 
-export const toolModules: ToolModule[] = [
+const toolModuleRegistry: ToolModule[] = [
     {
+        sort: 10,
         slug: 'timestamp',
         href: '/modules/timestamp',
         badge: 'TIME',
@@ -17,6 +19,7 @@ export const toolModules: ToolModule[] = [
         description: '在秒、毫秒、UTC 和本地时间之间快速换算。',
     },
     {
+        sort: 20,
         slug: 'exchange-rate',
         href: '/modules/exchange-rate',
         badge: 'FX',
@@ -24,6 +27,7 @@ export const toolModules: ToolModule[] = [
         description: '基于可编辑参考汇率，在常用币种间即时换算。',
     },
     {
+        sort: 30,
         slug: 'qrcode',
         href: '/modules/qrcode',
         badge: 'QR',
@@ -31,6 +35,7 @@ export const toolModules: ToolModule[] = [
         description: '生成二维码图片，或从本地/网络图片中反解析二维码内容。',
     },
     {
+        sort: 40,
         slug: 'base64',
         href: '/modules/base64',
         badge: 'B64',
@@ -38,6 +43,7 @@ export const toolModules: ToolModule[] = [
         description: '支持文字 Base64 转换，以及本地或网络图片转 Base64。',
     },
     {
+        sort: 50,
         slug: 'json-tools',
         href: '/modules/json-tools',
         badge: 'JSON',
@@ -45,6 +51,8 @@ export const toolModules: ToolModule[] = [
         description: '校验 JSON 合法性，并快速格式化或压缩输出。',
     },
 ];
+
+export const toolModules = [...toolModuleRegistry].sort((previousTool, nextTool) => previousTool.sort - nextTool.sort);
 
 export const defaultToolHref = toolModules[0].href;
 
