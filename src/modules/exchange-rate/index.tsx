@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/libs/utils';
+import { ModuleIntro } from '@/components/ModuleIntro';
 import { StorageEnum } from '@/services/types';
 
 type CurrencyCode = 'USD' | 'CNY' | 'EUR' | 'GBP' | 'JPY' | 'HKD' | 'SGD';
@@ -108,17 +109,11 @@ export function ExchangeRateConverter() {
 
     return (
         <section className="space-y-6">
-            <section className="rounded-[28px] border border-primary-200 bg-[linear-gradient(135deg,var(--fill-a)_0%,rgba(225,238,229,0.92)_100%)] p-6 shadow-[0_20px_54px_rgba(0,54,22,0.08)]">
-                <span className="inline-flex rounded-full bg-primary-400 px-3 py-1 text-body-xs tracking-[0.24em] text-text-a">
-                    MODULE / FX
-                </span>
-                <h1 className="mt-4 text-headline-sm text-primary-700" style={{ fontFamily: 'var(--font-rajdhani)' }}>
-                    汇率转换
-                </h1>
-                <p className="mt-3 max-w-2xl text-body-pc-md leading-7 text-text-d">
-                    默认内置一组常用参考汇率，适合报价、核算和日常换算。汇率表支持直接编辑，刷新后会保存在当前浏览器。
-                </p>
-            </section>
+            <ModuleIntro
+                badge="MODULE / FX"
+                title="汇率转换"
+                description="默认内置一组常用参考汇率，适合报价、核算和日常换算。汇率表支持直接编辑，刷新后会保存在当前浏览器。"
+            />
 
             <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
                 <section className={panelClassName}>

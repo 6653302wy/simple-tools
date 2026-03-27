@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useState } from 'react';
 import { cn } from '@/libs/utils';
+import { ModuleIntro } from '@/components/ModuleIntro';
 
 dayjs.extend(utc);
 
@@ -95,18 +96,11 @@ export function TimestampConverter() {
 
     return (
         <section className="space-y-6">
-            <section className="rounded-[28px] border border-primary-200 bg-[linear-gradient(135deg,var(--fill-a)_0%,rgba(225,238,229,0.92)_100%)] p-6 shadow-[0_20px_54px_rgba(0,54,22,0.08)]">
-                <span className="inline-flex rounded-full bg-primary-400 px-3 py-1 text-body-xs tracking-[0.24em] text-text-a">
-                    MODULE / TIME
-                </span>
-                <h1 className="mt-4 text-headline-sm text-primary-700" style={{ fontFamily: 'var(--font-rajdhani)' }}>
-                    时间戳转换
-                </h1>
-                <p className="mt-3 max-w-2xl text-body-pc-md leading-7 text-text-d">
-                    适合调试接口、排查日志和核对前后端时间字段。左侧输入时间戳或日期时间，结果会在当前浏览器时区和 UTC
-                    之间同步展示。
-                </p>
-            </section>
+            <ModuleIntro
+                badge="MODULE / TIME"
+                title="时间戳转换"
+                description="适合调试接口、排查日志和核对前后端时间字段。左侧输入时间戳或日期时间，结果会在当前浏览器时区和 UTC 之间同步展示。"
+            />
 
             <section className="grid gap-6 xl:grid-cols-2">
                 <section className={panelClassName}>

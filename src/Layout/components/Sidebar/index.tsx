@@ -76,11 +76,7 @@ export function Sidebar() {
                 })}
             </nav>
 
-            <div className="mt-4 rounded-md border border-dashed border-primary-200 bg-fill-a px-4 py-3 text-body-pc-md text-text-d">
-                <p className="text-title-sm text-text-e">工作台说明</p>
-                <p className="mt-2">汇率工具使用本地参考值，可在工具页中手动调整，不依赖在线接口。</p>
-                <p className="mt-2 text-body-xs text-text-c">{isPending ? '正在切换模块...' : '当前模块已就绪。'}</p>
-            </div>
+            
         </aside>
     );
 }
