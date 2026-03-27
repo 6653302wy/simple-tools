@@ -1,0 +1,166 @@
+@import "./theme.css";
+@import "tailwindcss";
+/* @import "tw-animate-css"; */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans: var(--font-roboto);
+    --font-family-inter: var(--font-inter);
+    --font-family-rajdhani: var(--font-rajdhani);
+
+    --radius-xs: var(--rounded-xs);
+    --radius-sm: var(--rounded-sm);
+    --radius-md: var(--rounded-md);
+    --radius-lg: var(--rounded-lg);
+    --radius-full: var(--rounded-full);
+
+    /* TEXT SECTION */
+    --text-body-xs: 10px;
+    --text-body-xs--line-height: 13px;
+    --text-body-xs--font-weight: 500;
+
+    --text-body-sm: 12px;
+    --text-body-sm--line-height: 16px;
+    --text-body-sm--font-weight: 600;
+
+    --text-body-pc-md: 14px;
+    --text-body-pc-md--line-height: 18px;
+    --text-body-pc-md--font-weight: 400;
+
+    --text-body-md: 14px;
+    --text-body-md--line-height: 18px;
+    --text-body-md--font-weight: 500;
+
+    --text-title-sm: 14px;
+    --text-title-sm--line-height: 18px;
+    --text-title-sm--font-weight: 600;
+
+    --text-title-md: 16px;
+    --text-title-md--line-height: 20px;
+    --text-title-md--font-weight: 600;
+
+    --text-title-lg: 18px;
+    --text-title-lg--line-height: 24px;
+    --text-title-lg--font-weight: 600;
+
+    --text-title-xl: 20px;
+    --text-title-xl--line-height: 28px;
+    --text-title-xl--font-weight: 600;
+
+    --text-headline-sm: 24px;
+    --text-headline-sm--line-height: 24px;
+    --text-headline-sm--font-weight: 600;
+
+    --text-headline-md: 28px;
+    --text-headline-md--line-height: 40px;
+    --text-headline-md--font-weight: 600;
+
+    --text-headline-lg: 36px;
+    --text-headline-lg--line-height: 40px;
+    --text-headline-lg--font-weight: 600;
+
+    /************ COLORS SECTION **********************/
+
+    --color-primary-100: var(--primary-100);
+    --color-primary-200: var(--primary-200);
+    --color-primary-300: var(--primary-300);
+    --color-primary-400: var(--primary-400);
+    --color-primary-500: var(--primary-500);
+    --color-primary-600: var(--primary-600);
+    --color-primary-700: var(--primary-700);
+
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-error: var(--error);
+
+    --color-auxiliary-green: var(--auxiliary-green);
+    --color-auxiliary-purple: var(--auxiliary-purple);
+    --color-auxiliary-blue: var(--auxiliary-blue);
+
+    --color-text-a: var(--text-a);
+    --color-text-b: var(--text-b);
+    --color-text-c: var(--text-c);
+    --color-text-d: var(--text-d);
+    --color-text-e: var(--text-e);
+
+    --color-fill-a: var(--fill-a);
+    --color-fill-b: var(--fill-b);
+    --color-fill-c: var(--fill-c);
+    --color-fill-d: var(--fill-d);
+    --color-fill-e: var(--fill-e);
+
+    --color-neutral-a: var(--neutral-a);
+    --color-neutral-b: var(--neutral-b);
+    --color-neutral-c: var(--neutral-c);
+    --color-neutral-d: var(--neutral-d);
+    --color-neutral-e: var(--neutral-e);
+    --color-neutral-f: var(--neutral-f);
+    --color-neutral-g: var(--neutral-g);
+    --color-neutral-h: var(--neutral-h);
+    --color-neutral-i: var(--neutral-i);
+    --color-neutral-j: var(--neutral-j);
+    --color-neutral-k: var(--neutral-k);
+    --color-neutral-l: var(--neutral-l);
+    --color-neutral-m: var(--neutral-m);
+    --color-neutral-n: var(--neutral-n);
+    --color-neutral-o: var(--neutral-o);
+    --color-neutral-p: var(--neutral-p);
+
+    /* --color-background: var(--background); */
+    --color-foreground: var(--foreground);
+}
+
+/* TODO: 全局背景/前景色等预留 */
+@layer base {
+    body {
+        /* background: var(--background); */
+        color: var(--foreground);
+    }
+}
+
+@layer utilities {
+    body {
+        font-size: var(--text-body-md);
+    }
+
+    code,
+    kbd,
+    samp,
+    pre {
+        font-family: inherit;
+    }
+
+    .ellipsis {
+        @apply inline-block whitespace-nowrap text-ellipsis overflow-hidden;
+    }
+
+    body * {
+        /* 核心：设置滚动条为悬浮模式（overlay），不占布局空间 */
+        scrollbar-gutter: stable overlay;
+        /* 允许元素自动显示滚动条（仅内容溢出时出现） */
+        /* overflow: auto; */
+
+        /* 全局定义悬浮滚动条样式（细条、半透明，接近 Mac 效果） */
+        &::-webkit-scrollbar {
+            width: 6px; /* 垂直滚动条宽度（细条，悬浮专用） */
+            height: 6px; /* 水平滚动条高度 */
+            background: transparent; /* 轨道透明，不遮挡内容 */
+        }
+
+        /* 滚动条轨道样式（悬浮时无需显示轨道，透明即可） */
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* 滚动条滑块样式（半透明、圆角，hover 加深） */
+        &::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2); /* 半透明灰，Mac 经典样式 */
+            border-radius: 3px; /* 圆角细条 */
+            transition: background 0.2s ease; /* 平滑过渡 */
+        }
+        &::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4); /* hover 时加深，提升辨识度 */
+        }
+    }
+}

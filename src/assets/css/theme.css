@@ -1,0 +1,129 @@
+:root {
+    /** 圆角 */
+    --rounded-xs: 4px;
+    --rounded-sm: 8px;
+    --rounded-md: 12px;
+    --rounded-lg: 24px;
+    --rounded-full: 9999px;
+}
+
+/************ LIGHT THEME COLORS **********************/
+:root,
+.light {
+    /** 主色 */
+    --primary-100: #e1eee5;
+    --primary-200: #c6ecd3;
+    --primary-300: #33af61;
+    --primary-400: #009b39;
+    --primary-500: #07752e;
+    --primary-600: #065f29;
+    --primary-700: #003616;
+
+    /** 功能色 */
+    --success: #00b42b;
+    --warning: #ffc700;
+    --error: #eb3333;
+
+    /** 辅助色 */
+    --auxiliary-green: #a0d337;
+    --auxiliary-purple: #775cdf;
+    --auxiliary-blue: #0061ba;
+
+    /** 文本色 */
+    --text-a: #ececec;
+    --text-b: #c9cdd4;
+    --text-c: #86909c;
+    --text-d: #4e5969;
+    --text-e: #1d2129;
+
+    /** fill */
+    --fill-a: #ffffff;
+    --fill-b: #f6f6f7;
+    --fill-c: #ededee;
+    --fill-d: #e5e6ea;
+    --fill-e: #c9cdd4;
+
+    /** neutral white */
+    --neutral-a: rgba(255, 255, 255, 0.04);
+    --neutral-b: rgba(255, 255, 255, 0.08);
+    --neutral-c: rgba(255, 255, 255, 0.12);
+    --neutral-d: rgba(255, 255, 255, 0.2);
+    --neutral-e: rgba(255, 255, 255, 0.3);
+    --neutral-f: rgba(255, 255, 255, 0.5);
+    --neutral-g: rgba(255, 255, 255, 0.7);
+    --neutral-h: rgba(255, 255, 255, 1);
+
+    /** neutral-dark */
+    --neutral-i: rgba(13, 21, 18, 0.04);
+    --neutral-j: rgba(13, 21, 18, 0.08);
+    --neutral-k: rgba(13, 21, 18, 0.12);
+    --neutral-l: rgba(13, 21, 18, 0.2);
+    --neutral-m: rgba(13, 21, 18, 0.3);
+    --neutral-n: rgba(13, 21, 18, 0.5);
+    --neutral-o: rgba(13, 21, 18, 0.7);
+    --neutral-p: rgba(13, 21, 18, 1);
+
+    /* 主题背景/前景色 */
+    /* --background: linear-gradient(180deg, #fddcdc 0%, #eff1f2 24.66%); */
+    --foreground: var(--text-e);
+}
+
+/************ DARK THEME COLORS **********************/
+.dark {
+    /** 主色 */
+    --primary-100: #e1eee9;
+    --primary-200: #c6ecd3;
+    --primary-300: #33af61;
+    --primary-400: #009b39;
+    --primary-500: #07752e;
+    --primary-600: #065f29;
+    --primary-700: #003616;
+
+    /** 功能色 */
+    --success: #00b42b;
+    --warning: #ffc700;
+    --error: #f53f3f;
+
+    /** 辅助色 */
+    --auxiliary-green: #a0d337;
+    --auxiliary-purple: #775cdf;
+    --auxiliary-blue: #0061ba;
+
+    /** 文本色 */
+    --text-a: #ffffff;
+    --text-b: rgba(255, 255, 255, 0.22);
+    --text-c: rgba(255, 255, 255, 0.35);
+    --text-d: rgba(255, 255, 255, 0.55);
+    --text-e: #ffffff;
+
+    /** fill */
+    --fill-a: #5e7f9a;
+    --fill-b: #3d5267;
+    --fill-c: #303c4a;
+    --fill-d: #181e25;
+    --fill-e: #0a0f0e;
+
+    /** neutral white */
+    --neutral-a: rgba(255, 255, 255, 0.04);
+    --neutral-b: rgba(255, 255, 255, 0.08);
+    --neutral-c: rgba(255, 255, 255, 0.12);
+    --neutral-d: rgba(255, 255, 255, 0.2);
+    --neutral-e: rgba(255, 255, 255, 0.3);
+    --neutral-f: rgba(255, 255, 255, 0.5);
+    --neutral-g: rgba(255, 255, 255, 0.7);
+    --neutral-h: rgba(255, 255, 255, 1);
+
+    /** neutral-dark */
+    --neutral-i: rgba(13, 21, 18, 0.04);
+    --neutral-j: rgba(13, 21, 18, 0.08);
+    --neutral-k: rgba(13, 21, 18, 0.12);
+    --neutral-l: rgba(13, 21, 18, 0.2);
+    --neutral-m: rgba(13, 21, 18, 0.3);
+    --neutral-n: rgba(13, 21, 18, 0.5);
+    --neutral-o: rgba(13, 21, 18, 0.7);
+    --neutral-p: rgba(13, 21, 18, 1);
+
+    /* 主题背景/前景色 */
+    /* --background: hsla(211, 42%, 12%, 1); */
+    --foreground: var(--text-e);
+}

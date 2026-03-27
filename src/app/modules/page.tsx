@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { defaultToolHref } from '@/modules/tool-registry';
 
-export default function Home() {
+export default function ModulesPage() {
     redirect(defaultToolHref);
 }
