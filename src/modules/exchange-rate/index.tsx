@@ -193,8 +193,8 @@ export function ExchangeRateConverter() {
                         </div>
                     </div>
 
-                    <div className="mt-4 rounded-[20px] bg-[linear-gradient(135deg,var(--primary-400)_0%,var(--primary-600)_100%)] p-4 text-text-a shadow-[0_16px_32px_rgba(0,54,22,0.18)]">
-                        <p className="text-body-xs uppercase tracking-[0.22em] text-text-a/70">
+                    <div className="mt-4 rounded-[20px] border border-primary-200 bg-[linear-gradient(135deg,rgba(225,238,229,0.96)_0%,rgba(198,236,211,0.92)_100%)] p-4 text-text-e shadow-[0_12px_28px_rgba(0,54,22,0.10)]">
+                        <p className="text-body-xs uppercase tracking-[0.22em] text-primary-600/80">
                             {t('exchangeRate.resultTitle')}
                         </p>
                         {convertedAmount !== null ? (
@@ -202,15 +202,15 @@ export function ExchangeRateConverter() {
                                 <p className="mt-2 text-headline-sm" style={{ fontFamily: 'var(--font-rajdhani)' }}>
                                     {formatCurrencyAmount(convertedAmount, toCurrency)}
                                 </p>
-                                <p className="mt-1.5 text-body-pc-md text-text-a/80">
+                                <p className="mt-1.5 text-body-pc-md text-text-d">
                                     {`${formatCurrencyAmount(amount, fromCurrency)} ≈ ${formatCurrencyAmount(convertedAmount, toCurrency)}`}
                                 </p>
-                                <p className="mt-3 text-body-sm text-text-a/70">
+                                <p className="mt-3 text-body-sm text-text-c">
                                     {`1 ${fromCurrency} ≈ ${quotedRate.toFixed(4)} ${toCurrency}`}
                                 </p>
                             </>
                         ) : (
-                            <p className="mt-3 text-body-pc-md text-text-a/82">{t('exchangeRate.enterAmount')}</p>
+                            <p className="mt-3 text-body-pc-md text-text-d">{t('exchangeRate.enterAmount')}</p>
                         )}
                     </div>
                 </section>
