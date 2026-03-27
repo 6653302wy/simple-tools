@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/libs/utils';
 import { toolModules } from '@/modules/tool-registry';
+import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 import { useNavTransition } from '@/services/useNavTransition';
 
 /** 左侧菜单 */
@@ -10,9 +11,10 @@ export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
     const { startTransition } = useNavTransition();
+    const { confirmLeave } = useLeaveConfirm();
 
     return (
-        <aside className="rounded-2xl border border-neutral-j bg-[linear-gradient(180deg,var(--fill-a)_0%,rgba(198,236,211,0.58)_100%)] p-2 shadow-[0_24px_56px_rgba(0,54,22,0.08)] xl:rounded-3xl xl:p-4">
+        <aside className="sticky top-[4.5rem] h-[calc(100vh-5.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-neutral-j bg-[linear-gradient(180deg,var(--fill-a)_0%,rgba(198,236,211,0.58)_100%)] p-2 shadow-[0_24px_56px_rgba(0,54,22,0.08)] xl:rounded-3xl xl:p-4">
             <nav className="space-y-3">
                 {toolModules.map((tool, index) => {
                     const isActive = pathname.startsWith(tool.href);
@@ -28,8 +30,10 @@ export function Sidebar() {
                                     return;
                                 }
 
-                                startTransition(() => {
-                                    router.push(tool.href);
+                                confirmLeave(() => {
+                                    startTransition(() => {
+                                        router.push(tool.href);
+                                    });
                                 });
                             }}
                             className={cn(

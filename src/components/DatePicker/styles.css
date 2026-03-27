@@ -1,0 +1,9 @@
+/* Selected day */
+.calendar-day--selected {
+    color: var(--neutral-h);
+}
+
+/* Today (未选中) */
+.calendar-day--today:not(.calendar-day--selected) {
+    color: var(--primary-400);
+}

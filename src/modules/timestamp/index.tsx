@@ -3,6 +3,7 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useState } from 'react';
+import { DatePicker } from '@/components/DatePicker';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { cn } from '@/libs/utils';
 
@@ -20,7 +21,7 @@ const inputClassName =
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 
 function formatDateTimeInput(value: dayjs.Dayjs) {
-    return value.format('YYYY-MM-DDTHH:mm');
+    return value.format('YYYY-MM-DD HH:mm');
 }
 
 function parseTimestamp(rawValue: string, unit: TimestampUnit) {
@@ -65,16 +66,14 @@ function describeRelative(value: dayjs.Dayjs) {
 export function TimestampConverter() {
     const [timestampUnit, setTimestampUnit] = useState<TimestampUnit>('milliseconds');
     const [timestampInput, setTimestampInput] = useState(() => String(Date.now()));
-    const [dateInput, setDateInput] = useState(() => formatDateTimeInput(dayjs()));
+    const [selectedDate, setSelectedDate] = useState(() => dayjs());
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     const browserTimezone =
         typeof window === 'undefined' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
     const timestampDate = parseTimestamp(timestampInput, timestampUnit);
-    const selectedDate = dateInput ? dayjs(dateInput) : null;
-    const isSelectedDateValid = Boolean(selectedDate?.isValid());
     const timestampError = timestampInput.trim() && !timestampDate ? '请输入有效的数字时间戳。' : '';
-    const dateError = dateInput && !isSelectedDateValid ? '请选择有效日期时间。' : '';
 
     const timestampRows = timestampDate
         ? [
@@ -85,14 +84,11 @@ export function TimestampConverter() {
           ]
         : [];
 
-    const dateRows =
-        selectedDate && isSelectedDateValid
-            ? [
-                  { label: '毫秒时间戳', value: String(selectedDate.valueOf()) },
-                  { label: '秒时间戳', value: String(Math.floor(selectedDate.valueOf() / 1000)) },
-                  { label: 'UTC 时间', value: selectedDate.utc().format('YYYY-MM-DD HH:mm:ss') },
-              ]
-            : [];
+    const dateRows = [
+        { label: '毫秒时间戳', value: String(selectedDate.valueOf()) },
+        { label: '秒时间戳', value: String(Math.floor(selectedDate.valueOf() / 1000)) },
+        { label: 'UTC 时间', value: selectedDate.utc().format('YYYY-MM-DD HH:mm:ss') },
+    ];
 
     return (
         <section className="space-y-4">
@@ -192,7 +188,7 @@ export function TimestampConverter() {
                         <button
                             type="button"
                             onClick={() => {
-                                setDateInput(formatDateTimeInput(dayjs()));
+                                setSelectedDate(dayjs());
                             }}
                             className="shrink-0 whitespace-nowrap rounded-full border border-auxiliary-blue bg-[rgba(0,97,186,0.08)] px-4 py-2 text-body-sm text-auxiliary-blue transition hover:bg-[rgba(0,97,186,0.14)]"
                         >
@@ -200,35 +196,48 @@ export function TimestampConverter() {
                         </button>
                     </div>
 
-                    <div className="mt-4">
+                    <div className="relative mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="datetime-input">
                             本地日期时间
                         </label>
-                        <input
+                        <button
                             id="datetime-input"
-                            type="datetime-local"
-                            className={inputClassName}
-                            value={dateInput}
-                            onChange={(event) => {
-                                setDateInput(event.target.value);
+                            type="button"
+                            className={cn(
+                                inputClassName,
+                                'flex items-center justify-between text-left',
+                                isDatePickerOpen && 'border-primary-400 bg-fill-a',
+                            )}
+                            onClick={() => {
+                                setIsDatePickerOpen((previousValue) => !previousValue);
+                            }}
+                        >
+                            <span>{formatDateTimeInput(selectedDate)}</span>
+                            <span className="text-body-sm text-text-c">{browserTimezone}</span>
+                        </button>
+                        <p className="mt-2 text-body-xs text-text-c">{`当前浏览器时区: ${browserTimezone}`}</p>
+
+                        <DatePicker
+                            visible={isDatePickerOpen}
+                            value={selectedDate}
+                            showTime
+                            className="w-[min(100vw-2rem,22rem)]"
+                            onChange={(nextValue) => {
+                                setSelectedDate(nextValue);
+                            }}
+                            onClose={() => {
+                                setIsDatePickerOpen(false);
                             }}
                         />
-                        <p className="mt-2 text-body-xs text-text-c">{`当前浏览器时区: ${browserTimezone}`}</p>
                     </div>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                        {dateError ? (
-                            <p className="rounded-lg border border-warning bg-[rgba(255,199,0,0.14)] px-4 py-3 text-body-pc-md text-text-e">
-                                {dateError}
-                            </p>
-                        ) : (
-                            dateRows.map((row) => (
-                                <div key={row.label} className="rounded-lg border border-neutral-j bg-fill-b px-3 py-3">
-                                    <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">{row.label}</p>
-                                    <p className="mt-1.5 break-all text-title-sm text-text-e">{row.value}</p>
-                                </div>
-                            ))
-                        )}
+                        {dateRows.map((row) => (
+                            <div key={row.label} className="rounded-lg border border-neutral-j bg-fill-b px-3 py-3">
+                                <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">{row.label}</p>
+                                <p className="mt-1.5 break-all text-title-sm text-text-e">{row.value}</p>
+                            </div>
+                        ))}
                     </div>
                 </section>
             </section>

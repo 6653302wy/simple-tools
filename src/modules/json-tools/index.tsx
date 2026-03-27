@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
 import { CopyButton } from '@/components/CopyButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
+import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 
 const textareaClassName =
     'mt-2 min-h-72 w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
@@ -19,6 +20,24 @@ export function JsonTools() {
     const [source, setSource] = useState(sampleJson);
     const [result, setResult] = useState('');
     const [status, setStatus] = useState('等待校验');
+    const { setGuard } = useLeaveConfirm();
+    const isDirty = source !== sampleJson;
+
+    useEffect(() => {
+        setGuard({
+            active: isDirty,
+            title: 'JSON 内容已修改',
+            description: '你对当前 JSON 做了自定义修改，切换到其他工具后将离开当前编辑状态，确定继续离开吗？',
+        });
+
+        return () => {
+            setGuard({
+                active: false,
+                title: '',
+                description: '',
+            });
+        };
+    }, [isDirty, setGuard]);
 
     function parseSource() {
         return JSON.parse(source);

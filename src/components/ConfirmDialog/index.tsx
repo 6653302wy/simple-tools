@@ -1,0 +1,46 @@
+'use client';
+
+import { Dialog as RadixDialog } from 'radix-ui';
+import { Button } from '@/components/Button';
+
+interface ConfirmDialogProps {
+    open: boolean;
+    title: string;
+    description: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    onConfirm: () => void;
+    onCancel: () => void;
+}
+
+/** 通用确认弹窗 */
+export function ConfirmDialog({
+    open,
+    title,
+    description,
+    confirmLabel = '离开',
+    cancelLabel = '继续编辑',
+    onConfirm,
+    onCancel,
+}: ConfirmDialogProps) {
+    return (
+        <RadixDialog.Root open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
+            <RadixDialog.Portal>
+                <RadixDialog.Overlay className="fixed inset-0 z-50 bg-neutral-p/44 backdrop-blur-[2px]" />
+                <RadixDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-neutral-j bg-fill-a p-5 shadow-[0_28px_64px_rgba(0,54,22,0.16)]">
+                    <RadixDialog.Title className="text-title-xl text-text-e">{title}</RadixDialog.Title>
+                    <RadixDialog.Description className="mt-3 text-body-pc-md leading-7 text-text-d">
+                        {description}
+                    </RadixDialog.Description>
+
+                    <div className="mt-6 flex flex-wrap justify-end gap-3">
+                        <Button variant="secondary" onClick={onCancel}>
+                            {cancelLabel}
+                        </Button>
+                        <Button onClick={onConfirm}>{confirmLabel}</Button>
+                    </div>
+                </RadixDialog.Content>
+            </RadixDialog.Portal>
+        </RadixDialog.Root>
+    );
+}
