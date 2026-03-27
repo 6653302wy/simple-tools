@@ -9,7 +9,7 @@ import { DayPicker } from 'react-day-picker';
 import { enUS, es, pt } from 'react-day-picker/locale';
 import { Select } from '@/components/Select';
 import { cn } from '@/libs/utils';
-import { useI18nLanguage, useI18nTimezone } from '@/services/i18n';
+import { useI18n, useI18nLanguage, useI18nTimezone } from '@/services/i18n';
 import 'react-day-picker/style.css';
 import type { Language } from '@/services/i18n/constant';
 import { Button } from '../Button';
@@ -76,6 +76,7 @@ export const DatePicker: FC<Props> = ({
 }) => {
     const language = useI18nLanguage();
     const timezone = useI18nTimezone();
+    const { t } = useI18n();
     const dayPickerLocale = getDayPickerLocale(language);
     const [draftValue, setDraftValue] = useState<Dayjs>(() => value ?? dayjs.tz(undefined, timezone));
 
@@ -175,7 +176,7 @@ export const DatePicker: FC<Props> = ({
                                             className="text-body-xs uppercase tracking-[0.16em] text-text-c"
                                             htmlFor="datepicker-hour-select"
                                         >
-                                            时间
+                                            {t('datePicker.time')}
                                         </label>
                                         <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
                                             <Select
@@ -207,7 +208,7 @@ export const DatePicker: FC<Props> = ({
                                                     commitDraftValue(draftValue, true, true);
                                                 }}
                                             >
-                                                确定
+                                                {t('datePicker.confirm')}
                                             </Button>
                                         </div>
                                     </div>

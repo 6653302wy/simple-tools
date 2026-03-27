@@ -2,6 +2,7 @@
 
 import { Dialog as RadixDialog } from 'radix-ui';
 import { Button } from '@/components/Button';
+import { useI18n } from '@/services/i18n';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -18,11 +19,13 @@ export function ConfirmDialog({
     open,
     title,
     description,
-    confirmLabel = '离开',
-    cancelLabel = '继续编辑',
+    confirmLabel,
+    cancelLabel,
     onConfirm,
     onCancel,
 }: ConfirmDialogProps) {
+    const { t } = useI18n();
+
     return (
         <RadixDialog.Root open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
             <RadixDialog.Portal>
@@ -35,9 +38,9 @@ export function ConfirmDialog({
 
                     <div className="mt-6 flex flex-wrap justify-end gap-3">
                         <Button variant="secondary" onClick={onCancel}>
-                            {cancelLabel}
+                            {cancelLabel ?? t('common.continueEditing')}
                         </Button>
-                        <Button onClick={onConfirm}>{confirmLabel}</Button>
+                        <Button onClick={onConfirm}>{confirmLabel ?? t('common.leave')}</Button>
                     </div>
                 </RadixDialog.Content>
             </RadixDialog.Portal>

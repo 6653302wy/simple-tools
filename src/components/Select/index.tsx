@@ -3,6 +3,7 @@
 import { cva } from 'class-variance-authority';
 import { Select as RadixSelect } from 'radix-ui';
 import { cn } from '@/libs/utils';
+import { useI18n } from '@/services/i18n';
 import { ArrowDown } from '../icons/ArrowDown';
 
 export type SelectOption = {
@@ -48,12 +49,15 @@ export function Select({
     value,
     defaultValue,
     disabled,
-    placeholder = '请选择',
+    placeholder,
     options,
     className,
     contentClassName,
     onValueChange,
 }: SelectProps) {
+    const { t } = useI18n();
+    const resolvedPlaceholder = placeholder ?? t('common.selectPlaceholder');
+
     return (
         <RadixSelect.Root
             name={name}
@@ -62,8 +66,8 @@ export function Select({
             disabled={disabled}
             onValueChange={onValueChange}
         >
-            <RadixSelect.Trigger id={id} className={cn(triggerVariants(), className)} aria-label={placeholder}>
-                <RadixSelect.Value placeholder={placeholder} />
+            <RadixSelect.Trigger id={id} className={cn(triggerVariants(), className)} aria-label={resolvedPlaceholder}>
+                <RadixSelect.Value placeholder={resolvedPlaceholder} />
                 <RadixSelect.Icon asChild>
                     <ArrowDown className="shrink-0 text-body-sm text-text-c" />
                 </RadixSelect.Icon>

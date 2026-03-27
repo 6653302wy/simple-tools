@@ -6,15 +6,11 @@ import { useState } from 'react';
 import { DatePicker } from '@/components/DatePicker';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { cn } from '@/libs/utils';
+import { useI18n } from '@/services/i18n';
 
 dayjs.extend(utc);
 
 type TimestampUnit = 'milliseconds' | 'seconds';
-
-const timestampUnitOptions: Array<{ label: string; value: TimestampUnit }> = [
-    { label: '毫秒', value: 'milliseconds' },
-    { label: '秒', value: 'seconds' },
-];
 
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
@@ -41,69 +37,85 @@ function parseTimestamp(rawValue: string, unit: TimestampUnit) {
     return parsed.isValid() ? parsed : null;
 }
 
-function describeRelative(value: dayjs.Dayjs) {
+function describeRelative(value: dayjs.Dayjs, t: (key: string, variables?: Record<string, string | number>) => string) {
     const diffMinutes = value.diff(dayjs(), 'minute');
 
     if (Math.abs(diffMinutes) < 1) {
-        return '刚刚';
+        return t('timestamp.justNow');
     }
 
     if (Math.abs(diffMinutes) < 60) {
-        return diffMinutes > 0 ? `${diffMinutes} 分钟后` : `${Math.abs(diffMinutes)} 分钟前`;
+        return diffMinutes > 0
+            ? t('timestamp.minutesLater', { value: diffMinutes })
+            : t('timestamp.minutesAgo', { value: Math.abs(diffMinutes) });
     }
 
     const diffHours = value.diff(dayjs(), 'hour');
 
     if (Math.abs(diffHours) < 24) {
-        return diffHours > 0 ? `${diffHours} 小时后` : `${Math.abs(diffHours)} 小时前`;
+        return diffHours > 0
+            ? t('timestamp.hoursLater', { value: diffHours })
+            : t('timestamp.hoursAgo', { value: Math.abs(diffHours) });
     }
 
     const diffDays = value.diff(dayjs(), 'day');
 
-    return diffDays > 0 ? `${diffDays} 天后` : `${Math.abs(diffDays)} 天前`;
+    return diffDays > 0
+        ? t('timestamp.daysLater', { value: diffDays })
+        : t('timestamp.daysAgo', { value: Math.abs(diffDays) });
 }
 
 export function TimestampConverter() {
+    const { t } = useI18n();
     const [timestampUnit, setTimestampUnit] = useState<TimestampUnit>('milliseconds');
     const [timestampInput, setTimestampInput] = useState(() => String(Date.now()));
     const [selectedDate, setSelectedDate] = useState(() => dayjs());
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const timestampUnitOptions: Array<{ label: string; value: TimestampUnit }> = [
+        { label: t('timestamp.milliseconds'), value: 'milliseconds' },
+        { label: t('timestamp.seconds'), value: 'seconds' },
+    ];
 
     const browserTimezone =
         typeof window === 'undefined' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
     const timestampDate = parseTimestamp(timestampInput, timestampUnit);
-    const timestampError = timestampInput.trim() && !timestampDate ? '请输入有效的数字时间戳。' : '';
+    const timestampError = timestampInput.trim() && !timestampDate ? t('timestamp.invalidTimestamp') : '';
 
     const timestampRows = timestampDate
         ? [
-              { label: `浏览器时区 (${browserTimezone})`, value: timestampDate.format('YYYY-MM-DD HH:mm:ss') },
-              { label: 'UTC', value: timestampDate.utc().format('YYYY-MM-DD HH:mm:ss') },
-              { label: 'ISO 8601', value: timestampDate.toISOString() },
-              { label: '相对时间', value: describeRelative(timestampDate) },
+              {
+                  label: t('timestamp.browserTimezone', { timezone: browserTimezone }),
+                  value: timestampDate.format('YYYY-MM-DD HH:mm:ss'),
+              },
+              { label: t('timestamp.utc'), value: timestampDate.utc().format('YYYY-MM-DD HH:mm:ss') },
+              { label: t('timestamp.iso'), value: timestampDate.toISOString() },
+              { label: t('timestamp.relative'), value: describeRelative(timestampDate, t) },
           ]
         : [];
 
     const dateRows = [
-        { label: '毫秒时间戳', value: String(selectedDate.valueOf()) },
-        { label: '秒时间戳', value: String(Math.floor(selectedDate.valueOf() / 1000)) },
-        { label: 'UTC 时间', value: selectedDate.utc().format('YYYY-MM-DD HH:mm:ss') },
+        { label: t('timestamp.millisecondsTimestamp'), value: String(selectedDate.valueOf()) },
+        { label: t('timestamp.secondsTimestamp'), value: String(Math.floor(selectedDate.valueOf() / 1000)) },
+        { label: t('timestamp.utcTime'), value: selectedDate.utc().format('YYYY-MM-DD HH:mm:ss') },
     ];
 
     return (
         <section className="space-y-4">
             <ModuleIntro
                 badge="MODULE / TIME"
-                title="时间戳转换"
-                description="适合调试接口、排查日志和核对前后端时间字段。左侧输入时间戳或日期时间，结果会在当前浏览器时区和 UTC 之间同步展示。"
+                title={t('timestamp.introTitle')}
+                description={t('timestamp.introDescription')}
             />
 
             <section className="grid gap-4 xl:grid-cols-2">
                 <section className={panelClassName}>
                     <div className="flex items-start justify-between gap-4">
                         <div>
-                            <p className="text-title-lg text-text-e">时间戳转日期</p>
-                            <p className="mt-1 text-body-pc-md text-text-d">快速识别接口返回的秒级或毫秒级时间戳。</p>
+                            <p className="text-title-lg text-text-e">{t('timestamp.fromTimestampTitle')}</p>
+                            <p className="mt-1 text-body-pc-md text-text-d">
+                                {t('timestamp.fromTimestampDescription')}
+                            </p>
                         </div>
 
                         <button
@@ -116,13 +128,13 @@ export function TimestampConverter() {
                             }}
                             className="shrink-0 whitespace-nowrap rounded-full border border-primary-200 bg-primary-100 px-4 py-2 text-body-sm text-primary-600 transition hover:bg-primary-200"
                         >
-                            使用当前时间
+                            {t('timestamp.useCurrentTime')}
                         </button>
                     </div>
 
                     <div className="mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="timestamp-input">
-                            时间戳数值
+                            {t('timestamp.timestampValue')}
                         </label>
                         <input
                             id="timestamp-input"
@@ -132,7 +144,7 @@ export function TimestampConverter() {
                             onChange={(event) => {
                                 setTimestampInput(event.target.value);
                             }}
-                            placeholder="例如 1743043200000"
+                            placeholder={t('timestamp.timestampPlaceholder')}
                         />
                     </div>
 
@@ -179,10 +191,8 @@ export function TimestampConverter() {
                 <section className={panelClassName}>
                     <div className="flex items-start justify-between gap-4">
                         <div>
-                            <p className="text-title-lg text-text-e">日期转时间戳</p>
-                            <p className="mt-1 text-body-pc-md text-text-d">
-                                输入本地日期时间，快速换算成接口常用的 Unix 时间戳。
-                            </p>
+                            <p className="text-title-lg text-text-e">{t('timestamp.toTimestampTitle')}</p>
+                            <p className="mt-1 text-body-pc-md text-text-d">{t('timestamp.toTimestampDescription')}</p>
                         </div>
 
                         <button
@@ -192,13 +202,13 @@ export function TimestampConverter() {
                             }}
                             className="shrink-0 whitespace-nowrap rounded-full border border-auxiliary-blue bg-[rgba(0,97,186,0.08)] px-4 py-2 text-body-sm text-auxiliary-blue transition hover:bg-[rgba(0,97,186,0.14)]"
                         >
-                            填充当前时间
+                            {t('timestamp.fillCurrentTime')}
                         </button>
                     </div>
 
                     <div className="relative mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="datetime-input">
-                            本地日期时间
+                            {t('timestamp.localDateTime')}
                         </label>
                         <button
                             id="datetime-input"
@@ -215,7 +225,9 @@ export function TimestampConverter() {
                             <span>{formatDateTimeInput(selectedDate)}</span>
                             <span className="text-body-sm text-text-c">{browserTimezone}</span>
                         </button>
-                        <p className="mt-2 text-body-xs text-text-c">{`当前浏览器时区: ${browserTimezone}`}</p>
+                        <p className="mt-2 text-body-xs text-text-c">
+                            {t('common.currentBrowserTimezone', { timezone: browserTimezone })}
+                        </p>
 
                         <DatePicker
                             visible={isDatePickerOpen}

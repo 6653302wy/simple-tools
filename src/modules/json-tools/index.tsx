@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/Button';
 import { CopyButton } from '@/components/CopyButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
+import { useI18n } from '@/services/i18n';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 
 const textareaClassName =
@@ -17,17 +18,19 @@ const sampleJson = `{
 }`;
 
 export function JsonTools() {
-    const [source, setSource] = useState(sampleJson);
+    const { t } = useI18n();
+    const localizedSampleJson = useMemo(() => sampleJson, []);
+    const [source, setSource] = useState(localizedSampleJson);
     const [result, setResult] = useState('');
-    const [status, setStatus] = useState('等待校验');
+    const [status, setStatus] = useState(t('json.statusIdle'));
     const { setGuard } = useLeaveConfirm();
-    const isDirty = source !== sampleJson;
+    const isDirty = source !== localizedSampleJson;
 
     useEffect(() => {
         setGuard({
             active: isDirty,
-            title: 'JSON 内容已修改',
-            description: '你对当前 JSON 做了自定义修改，切换到其他工具后将离开当前编辑状态，确定继续离开吗？',
+            title: t('json.dirtyTitle'),
+            description: t('json.dirtyDescription'),
         });
 
         return () => {
@@ -37,7 +40,13 @@ export function JsonTools() {
                 description: '',
             });
         };
-    }, [isDirty, setGuard]);
+    }, [isDirty, setGuard, t]);
+
+    useEffect(() => {
+        if (!isDirty) {
+            setStatus(t('json.statusIdle'));
+        }
+    }, [isDirty, t]);
 
     function parseSource() {
         return JSON.parse(source);
@@ -46,10 +55,10 @@ export function JsonTools() {
     function handleValidate() {
         try {
             parseSource();
-            setStatus('JSON 合法');
+            setStatus(t('json.statusValid'));
             setResult('');
         } catch (error) {
-            setStatus(error instanceof Error ? error.message : 'JSON 校验失败');
+            setStatus(error instanceof Error ? error.message : t('json.statusValidateFailed'));
         }
     }
 
@@ -58,9 +67,9 @@ export function JsonTools() {
             const parsed = parseSource();
 
             setResult(JSON.stringify(parsed, null, 2));
-            setStatus('已按 2 空格缩进格式化');
+            setStatus(t('json.statusFormatted'));
         } catch (error) {
-            setStatus(error instanceof Error ? error.message : 'JSON 格式化失败');
+            setStatus(error instanceof Error ? error.message : t('json.statusFormatFailed'));
         }
     }
 
@@ -69,27 +78,21 @@ export function JsonTools() {
             const parsed = parseSource();
 
             setResult(JSON.stringify(parsed));
-            setStatus('已压缩 JSON');
+            setStatus(t('json.statusCompressed'));
         } catch (error) {
-            setStatus(error instanceof Error ? error.message : 'JSON 压缩失败');
+            setStatus(error instanceof Error ? error.message : t('json.statusCompressFailed'));
         }
     }
 
     return (
         <section className="space-y-4">
-            <ModuleIntro
-                badge="JSON"
-                title="JSON 校验与格式化"
-                description="用于校验 JSON 合法性，快速格式化输出，或压缩成单行 JSON 方便接口调试和日志处理。"
-            />
+            <ModuleIntro badge="JSON" title={t('json.introTitle')} description={t('json.introDescription')} />
 
             <section className={panelClassName}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <p className="text-title-lg text-text-e">JSON 工作台</p>
-                        <p className="mt-1 text-body-pc-md text-text-d">
-                            输入原始 JSON 字符串后，可执行校验、格式化或压缩。
-                        </p>
+                        <p className="text-title-lg text-text-e">{t('json.panelTitle')}</p>
+                        <p className="mt-1 text-body-pc-md text-text-d">{t('json.panelDescription')}</p>
                     </div>
                     <div className="rounded-full border border-primary-200 bg-primary-100 px-4 py-2 text-body-sm text-primary-700">
                         {status}
@@ -97,19 +100,19 @@ export function JsonTools() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                    <Button onClick={handleValidate}>校验</Button>
+                    <Button onClick={handleValidate}>{t('json.validate')}</Button>
                     <Button variant="secondary" onClick={handleFormat}>
-                        格式化
+                        {t('json.format')}
                     </Button>
                     <Button variant="secondary" onClick={handleCompress}>
-                        压缩
+                        {t('json.compress')}
                     </Button>
                 </div>
 
                 <div className="mt-4 grid gap-4 xl:grid-cols-2">
                     <div>
                         <label className="text-body-sm text-text-c" htmlFor="json-source">
-                            输入 JSON
+                            {t('json.inputJson')}
                         </label>
                         <textarea
                             id="json-source"
@@ -118,23 +121,27 @@ export function JsonTools() {
                             onChange={(event) => {
                                 setSource(event.target.value);
                             }}
-                            placeholder="输入待校验的 JSON 字符串"
+                            placeholder={t('json.inputPlaceholder')}
                         />
                     </div>
 
                     <div>
                         <div className="flex items-center justify-between gap-3">
                             <label className="text-body-sm text-text-c" htmlFor="json-result">
-                                处理结果
+                                {t('json.resultTitle')}
                             </label>
-                            <CopyButton text={result} className="px-3 py-2 text-body-sm" idleLabel="复制结果" />
+                            <CopyButton
+                                text={result}
+                                className="px-3 py-2 text-body-sm"
+                                idleLabel={t('common.copyResult')}
+                            />
                         </div>
                         <textarea
                             id="json-result"
                             className={textareaClassName}
                             value={result}
                             readOnly
-                            placeholder="格式化或压缩后的 JSON 会显示在这里"
+                            placeholder={t('json.resultPlaceholder')}
                         />
                     </div>
                 </div>

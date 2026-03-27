@@ -6,6 +6,7 @@ import { type ChangeEvent, useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { decodeQrCodeFromImage, fetchRemoteImageBlob } from '@/modules/shared/media';
+import { useI18n } from '@/services/i18n';
 
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
@@ -14,6 +15,7 @@ const textareaClassName =
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 
 export function QrCodeTool() {
+    const { language, t } = useI18n();
     const [qrText, setQrText] = useState('https://example.com/tools');
     const [qrDataUrl, setQrDataUrl] = useState('');
     const [generateError, setGenerateError] = useState('');
@@ -49,20 +51,20 @@ export function QrCodeTool() {
                     return;
                 }
 
-                setGenerateError('二维码生成失败，请检查输入内容。');
+                setGenerateError(t('qrcode.generateFailed'));
             });
 
         return () => {
             cancelled = true;
         };
-    }, [qrText]);
+    }, [qrText, t]);
 
     async function handleDecodeFromSource(source: Blob | string, sourceLabel: string, previewUrl?: string) {
         try {
             const qrValue = await decodeQrCodeFromImage(source);
 
             if (!qrValue) {
-                setDecodeError('未识别到二维码，请更换更清晰的图片。');
+                setDecodeError(t('qrcode.noQrFound'));
                 setDecodedText('');
                 setDecodeSourceLabel(sourceLabel);
                 setDecodePreview(previewUrl ?? '');
@@ -74,7 +76,7 @@ export function QrCodeTool() {
             setDecodeSourceLabel(sourceLabel);
             setDecodePreview(previewUrl ?? '');
         } catch (error) {
-            setDecodeError(error instanceof Error ? error.message : '二维码解析失败。');
+            setDecodeError(error instanceof Error ? error.message : t('qrcode.decodeFailed'));
             setDecodedText('');
             setDecodeSourceLabel(sourceLabel);
             setDecodePreview(previewUrl ?? '');
@@ -90,46 +92,42 @@ export function QrCodeTool() {
 
         const previewUrl = URL.createObjectURL(file);
 
-        await handleDecodeFromSource(file, `本地文件 · ${file.name}`, previewUrl);
+        await handleDecodeFromSource(file, t('qrcode.localFileSource', { name: file.name }), previewUrl);
         event.target.value = '';
     }
 
     async function handleUrlDecode() {
         if (!decodeImageUrl.trim()) {
-            setDecodeError('请输入可访问的图片链接。');
+            setDecodeError(t('qrcode.enterImageUrl'));
             return;
         }
 
         try {
-            const imageBlob = await fetchRemoteImageBlob(decodeImageUrl.trim());
+            const imageBlob = await fetchRemoteImageBlob(decodeImageUrl.trim(), language);
 
-            await handleDecodeFromSource(imageBlob, '网络图片链接', decodeImageUrl.trim());
+            await handleDecodeFromSource(imageBlob, t('qrcode.remoteImageSource'), decodeImageUrl.trim());
         } catch (error) {
-            setDecodeError(error instanceof Error ? error.message : '网络图片解析失败。');
+            setDecodeError(error instanceof Error ? error.message : t('qrcode.decodeFailed'));
             setDecodedText('');
-            setDecodeSourceLabel('网络图片链接');
+            setDecodeSourceLabel(t('qrcode.remoteImageSource'));
             setDecodePreview('');
         }
     }
 
     return (
         <section className="space-y-4">
-            <ModuleIntro
-                badge="QR"
-                title="二维码生成与反解"
-                description="支持文本生成二维码，也支持上传本地二维码图片或输入网络图片链接进行反解。"
-            />
+            <ModuleIntro badge="QR" title={t('qrcode.introTitle')} description={t('qrcode.introDescription')} />
 
             <section className="grid gap-4 xl:grid-cols-2">
                 <section className={panelClassName}>
                     <div>
-                        <p className="text-title-lg text-text-e">二维码生成</p>
-                        <p className="mt-1 text-body-pc-md text-text-d">输入任意文字、链接或配置串，实时生成二维码。</p>
+                        <p className="text-title-lg text-text-e">{t('qrcode.generateTitle')}</p>
+                        <p className="mt-1 text-body-pc-md text-text-d">{t('qrcode.generateDescription')}</p>
                     </div>
 
                     <div className="mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="qr-text-input">
-                            输入内容
+                            {t('qrcode.inputContent')}
                         </label>
                         <textarea
                             id="qr-text-input"
@@ -138,7 +136,7 @@ export function QrCodeTool() {
                             onChange={(event) => {
                                 setQrText(event.target.value);
                             }}
-                            placeholder="输入想编码到二维码中的文字或链接"
+                            placeholder={t('qrcode.inputPlaceholder')}
                         />
                     </div>
 
@@ -159,7 +157,7 @@ export function QrCodeTool() {
                                     style={{ imageRendering: 'pixelated' }}
                                 />
                             ) : (
-                                <p className="text-body-pc-md text-text-c">生成后的二维码会显示在这里。</p>
+                                <p className="text-body-pc-md text-text-c">{t('qrcode.generatePreviewPlaceholder')}</p>
                             )}
                         </div>
                     )}
@@ -167,16 +165,14 @@ export function QrCodeTool() {
 
                 <section className={panelClassName}>
                     <div>
-                        <p className="text-title-lg text-text-e">二维码反解</p>
-                        <p className="mt-1 text-body-pc-md text-text-d">
-                            支持上传本地图片，或通过网络图片链接解析二维码内容。
-                        </p>
+                        <p className="text-title-lg text-text-e">{t('qrcode.decodeTitle')}</p>
+                        <p className="mt-1 text-body-pc-md text-text-d">{t('qrcode.decodeDescription')}</p>
                     </div>
 
                     <div className="mt-4 grid gap-4">
                         <div>
                             <label className="text-body-sm text-text-c" htmlFor="qr-image-url">
-                                网络图片链接
+                                {t('qrcode.remoteImageUrl')}
                             </label>
                             <input
                                 id="qr-image-url"
@@ -185,11 +181,11 @@ export function QrCodeTool() {
                                 onChange={(event) => {
                                     setDecodeImageUrl(event.target.value);
                                 }}
-                                placeholder="https://example.com/qr.png"
+                                placeholder={t('qrcode.remoteImagePlaceholder')}
                             />
                             <div className="mt-3 flex flex-wrap gap-2">
                                 <Button variant="secondary" onClick={() => void handleUrlDecode()}>
-                                    解析链接图片
+                                    {t('qrcode.decodeRemoteImage')}
                                 </Button>
                                 <label className="inline-flex">
                                     <input
@@ -199,7 +195,7 @@ export function QrCodeTool() {
                                         onChange={handleFileDecode}
                                     />
                                     <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-title-md text-text-e transition hover:bg-fill-c">
-                                        上传本地图片
+                                        {t('qrcode.uploadLocalImage')}
                                     </span>
                                 </label>
                             </div>
@@ -207,7 +203,9 @@ export function QrCodeTool() {
 
                         {(decodePreview || decodeSourceLabel) && (
                             <div className="rounded-xl border border-neutral-j bg-fill-b p-3">
-                                <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">当前图片来源</p>
+                                <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">
+                                    {t('qrcode.currentImageSource')}
+                                </p>
                                 <p className="mt-1 text-body-pc-md text-text-e">{decodeSourceLabel}</p>
                                 {decodePreview && (
                                     <Image
@@ -223,13 +221,15 @@ export function QrCodeTool() {
                         )}
 
                         <div className="rounded-xl border border-neutral-j bg-fill-b p-3">
-                            <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">解析结果</p>
+                            <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">
+                                {t('qrcode.decodeResult')}
+                            </p>
                             {decodeError ? (
                                 <p className="mt-2 text-body-pc-md text-error">{decodeError}</p>
                             ) : decodedText ? (
                                 <p className="mt-2 break-all text-body-pc-md text-text-e">{decodedText}</p>
                             ) : (
-                                <p className="mt-2 text-body-pc-md text-text-c">等待图片输入。</p>
+                                <p className="mt-2 text-body-pc-md text-text-c">{t('qrcode.waitingForImage')}</p>
                             )}
                         </div>
                     </div>

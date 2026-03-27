@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/Button';
 import { ModuleIntro } from '@/components/ModuleIntro';
+import { useI18n } from '@/services/i18n';
 
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
@@ -41,6 +42,7 @@ function formatSampleMbps(value: number | null) {
 }
 
 export function NetworkSpeedTool() {
+    const { language, t } = useI18n();
     const [target, setTarget] = useState('https://example.com');
     const [result, setResult] = useState<ProbeResponse | null>(null);
     const [error, setError] = useState('');
@@ -48,7 +50,7 @@ export function NetworkSpeedTool() {
 
     async function handleProbe() {
         if (!target.trim()) {
-            setError('请输入待测试的 IP、域名或 URL。');
+            setError(t('network.invalidTarget'));
             return;
         }
 
@@ -61,19 +63,21 @@ export function NetworkSpeedTool() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ target }),
+                body: JSON.stringify({ language, target }),
             });
 
             const payload = (await response.json()) as ProbeResponse | { message?: string };
 
             if (!response.ok) {
-                throw new Error('message' in payload ? payload.message || '测速失败' : '测速失败');
+                throw new Error(
+                    'message' in payload ? payload.message || t('network.probeFailed') : t('network.probeFailed'),
+                );
             }
 
             setResult(payload as ProbeResponse);
         } catch (probeError) {
             setResult(null);
-            setError(probeError instanceof Error ? probeError.message : '测速失败');
+            setError(probeError instanceof Error ? probeError.message : t('network.probeFailed'));
         } finally {
             setLoading(false);
         }
@@ -81,35 +85,29 @@ export function NetworkSpeedTool() {
 
     const metricRows = result
         ? [
-              { label: '规范化地址', value: result.normalizedUrl },
-              { label: '解析 IP', value: result.resolvedAddress ?? '--' },
-              { label: 'DNS 耗时', value: formatDuration(result.dnsMs) },
-              { label: '响应头耗时', value: formatDuration(result.headerMs) },
-              { label: '总耗时', value: formatDuration(result.totalMs) },
-              { label: '采样速率', value: formatSampleMbps(result.sampleMbps) },
+              { label: t('network.normalizedUrl'), value: result.normalizedUrl },
+              { label: t('network.resolvedAddress'), value: result.resolvedAddress ?? '--' },
+              { label: t('network.dnsMs'), value: formatDuration(result.dnsMs) },
+              { label: t('network.headerMs'), value: formatDuration(result.headerMs) },
+              { label: t('network.totalMs'), value: formatDuration(result.totalMs) },
+              { label: t('network.sampleMbps'), value: formatSampleMbps(result.sampleMbps) },
           ]
         : [];
 
     return (
         <section className="space-y-4">
-            <ModuleIntro
-                badge="NET"
-                title="网络测速工具"
-                description="支持输入 IP、域名或完整 URL，测试服务端请求的可达性、响应耗时和采样下载速度。"
-            />
+            <ModuleIntro badge="NET" title={t('network.introTitle')} description={t('network.introDescription')} />
 
             <section className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
                 <section className={panelClassName}>
                     <div>
-                        <p className="text-title-lg text-text-e">测速输入</p>
-                        <p className="mt-1 text-body-pc-md text-text-d">
-                            可直接输入 `1.1.1.1`、`example.com` 或 `https://example.com/path`。
-                        </p>
+                        <p className="text-title-lg text-text-e">{t('network.inputTitle')}</p>
+                        <p className="mt-1 text-body-pc-md text-text-d">{t('network.inputDescription')}</p>
                     </div>
 
                     <div className="mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="network-target-input">
-                            测试目标
+                            {t('network.target')}
                         </label>
                         <input
                             id="network-target-input"
@@ -118,13 +116,13 @@ export function NetworkSpeedTool() {
                             onChange={(event) => {
                                 setTarget(event.target.value);
                             }}
-                            placeholder="example.com 或 8.8.8.8"
+                            placeholder={t('network.targetPlaceholder')}
                         />
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
                         <Button loading={loading} onClick={() => void handleProbe()}>
-                            开始测速
+                            {t('network.startProbe')}
                         </Button>
                     </div>
 
@@ -138,12 +136,12 @@ export function NetworkSpeedTool() {
                 <section className={panelClassName}>
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-title-lg text-text-e">测速结果</p>
-                            <p className="mt-1 text-body-pc-md text-text-d">显示响应状态、解析 IP、耗时和采样吞吐。</p>
+                            <p className="text-title-lg text-text-e">{t('network.resultTitle')}</p>
+                            <p className="mt-1 text-body-pc-md text-text-d">{t('network.resultDescription')}</p>
                         </div>
                         {result && (
                             <div className="rounded-full border border-primary-200 bg-primary-100 px-4 py-2 text-body-sm text-primary-700">
-                                {`${result.status} ${result.ok ? 'OK' : 'FAIL'}`}
+                                {`${result.status} ${result.ok ? t('network.ok') : t('network.fail')}`}
                             </div>
                         )}
                     </div>
@@ -159,7 +157,7 @@ export function NetworkSpeedTool() {
                         </div>
                     ) : (
                         <div className="mt-4 rounded-xl border border-dashed border-primary-200 bg-primary-100/40 px-4 py-8 text-center text-body-pc-md text-text-d">
-                            结果将在这里展示。
+                            {t('network.waitingResult')}
                         </div>
                     )}
                 </section>

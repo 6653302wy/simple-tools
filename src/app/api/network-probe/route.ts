@@ -2,6 +2,8 @@ import dns from 'node:dns/promises';
 import net from 'node:net';
 import { performance } from 'node:perf_hooks';
 import type { NextRequest } from 'next/server';
+import { isLanguage, type Language } from '@/services/i18n/constant';
+import { translate } from '@/services/i18n/messages';
 
 export const dynamic = 'force-dynamic';
 
@@ -126,11 +128,11 @@ async function measureRequest(url: URL, method: 'HEAD' | 'GET', resolvedAddress:
     } satisfies ProbeResult;
 }
 
-async function probeTarget(target: string) {
+async function probeTarget(target: string, language: Language) {
     const candidates = normalizeCandidates(target);
 
     if (!candidates.length) {
-        throw new Error('请输入有效的域名、IP 或完整 URL。');
+        throw new Error(translate(language, 'api.invalidProbeTarget'));
     }
 
     let lastError: Error | null = null;
@@ -147,27 +149,28 @@ async function probeTarget(target: string) {
 
             return await measureRequest(candidate, 'GET', resolved.address, resolved.dnsMs);
         } catch (error) {
-            lastError = error instanceof Error ? error : new Error('测速失败');
+            lastError = error instanceof Error ? error : new Error(translate(language, 'api.probeFailed'));
         }
     }
 
-    throw lastError ?? new Error('测速失败');
+    throw lastError ?? new Error(translate(language, 'api.probeFailed'));
 }
 
 export async function POST(request: NextRequest) {
-    const payload = (await request.json().catch(() => null)) as { target?: string } | null;
+    const payload = (await request.json().catch(() => null)) as { language?: string; target?: string } | null;
     const target = payload?.target?.trim();
+    const language = isLanguage(payload?.language) ? payload.language : 'zh';
 
     if (!target) {
-        return Response.json({ message: '请输入待测试的域名、IP 或 URL。' }, { status: 400 });
+        return Response.json({ message: translate(language, 'api.probeMissingTarget') }, { status: 400 });
     }
 
     try {
-        const result = await probeTarget(target);
+        const result = await probeTarget(target, language);
 
         return Response.json(result);
     } catch (error) {
-        const message = error instanceof Error ? error.message : '测速失败';
+        const message = error instanceof Error ? error.message : translate(language, 'api.probeFailed');
 
         return Response.json({ message }, { status: 400 });
     }

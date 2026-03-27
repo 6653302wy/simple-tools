@@ -11,6 +11,7 @@ import {
     useState,
 } from 'react';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useI18n } from '@/services/i18n';
 
 type LeaveConfirmState = {
     active: boolean;
@@ -38,6 +39,7 @@ const LeaveConfirmContext = createContext<LeaveConfirmContextValue>({
 
 /** 离开确认 provider */
 export const LeaveConfirmProvider: FC<PropsWithChildren> = ({ children }) => {
+    const { t } = useI18n();
     const [guard, setGuard] = useState<LeaveConfirmState>(defaultGuard);
     const [dialogOpen, setDialogOpen] = useState(false);
     const pendingActionRef = useRef<(() => void) | null>(null);
@@ -76,13 +78,21 @@ export const LeaveConfirmProvider: FC<PropsWithChildren> = ({ children }) => {
         [guard, confirmLeave],
     );
 
+    const resolvedGuard = guard.active
+        ? guard
+        : {
+              active: false,
+              title: t('confirmDialog.defaultTitle'),
+              description: t('confirmDialog.defaultDescription'),
+          };
+
     return (
         <LeaveConfirmContext value={value}>
             {children}
             <ConfirmDialog
                 open={dialogOpen}
-                title={guard.title}
-                description={guard.description}
+                title={resolvedGuard.title}
+                description={resolvedGuard.description}
                 onCancel={handleCancel}
                 onConfirm={handleConfirm}
             />

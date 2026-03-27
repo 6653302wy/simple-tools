@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/Button';
+import { useI18n } from '@/services/i18n';
 
 type CopyButtonStatus = 'idle' | 'copied' | 'error';
 
@@ -31,14 +32,8 @@ async function copyText(text: string) {
 }
 
 /** 复制按钮 */
-export function CopyButton({
-    text,
-    disabled,
-    idleLabel = '复制结果',
-    copiedLabel = '已复制',
-    errorLabel = '复制失败',
-    className,
-}: CopyButtonProps) {
+export function CopyButton({ text, disabled, idleLabel, copiedLabel, errorLabel, className }: CopyButtonProps) {
+    const { t } = useI18n();
     const [status, setStatus] = useState<CopyButtonStatus>('idle');
     const timerRef = useRef<number | null>(null);
 
@@ -71,7 +66,12 @@ export function CopyButton({
         }
     }
 
-    const label = status === 'copied' ? copiedLabel : status === 'error' ? errorLabel : idleLabel;
+    const label =
+        status === 'copied'
+            ? (copiedLabel ?? t('common.copied'))
+            : status === 'error'
+              ? (errorLabel ?? t('common.copyFailed'))
+              : (idleLabel ?? t('common.copyResult'));
 
     return (
         <Button

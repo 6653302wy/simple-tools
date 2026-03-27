@@ -7,6 +7,7 @@ import { CopyButton } from '@/components/CopyButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { decodeBase64ToText, encodeTextToBase64 } from '@/modules/shared/base64';
 import { blobToDataUrl, fetchRemoteImageBlob } from '@/modules/shared/media';
+import { useI18n } from '@/services/i18n';
 
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
@@ -15,6 +16,7 @@ const textareaClassName =
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 
 export function Base64Tool() {
+    const { language, t } = useI18n();
     const [textInput, setTextInput] = useState('Hello, Base64');
     const [textOutput, setTextOutput] = useState('');
     const [textError, setTextError] = useState('');
@@ -30,7 +32,7 @@ export function Base64Tool() {
             setTextOutput(encodeTextToBase64(textInput));
             setTextError('');
         } catch {
-            setTextError('文字编码失败，请检查输入内容。');
+            setTextError(t('base64.textEncodeFailed'));
         }
     }
 
@@ -39,7 +41,7 @@ export function Base64Tool() {
             setTextOutput(decodeBase64ToText(textInput));
             setTextError('');
         } catch {
-            setTextError('Base64 解析失败，请确认输入合法。');
+            setTextError(t('base64.textDecodeFailed'));
         }
     }
 
@@ -56,9 +58,9 @@ export function Base64Tool() {
             setImageBase64(dataUrl);
             setImagePreview(dataUrl);
             setImageError('');
-            setImageSourceLabel(`本地文件 · ${file.name}`);
+            setImageSourceLabel(t('base64.localFileSource', { name: file.name }));
         } catch {
-            setImageError('本地图片转换失败。');
+            setImageError(t('base64.localImageFailed'));
         } finally {
             event.target.value = '';
         }
@@ -66,41 +68,37 @@ export function Base64Tool() {
 
     async function handleImageUrl() {
         if (!imageUrl.trim()) {
-            setImageError('请输入网络图片链接。');
+            setImageError(t('base64.enterImageUrl'));
             return;
         }
 
         try {
-            const imageBlob = await fetchRemoteImageBlob(imageUrl.trim());
+            const imageBlob = await fetchRemoteImageBlob(imageUrl.trim(), language);
             const dataUrl = await blobToDataUrl(imageBlob);
 
             setImageBase64(dataUrl);
             setImagePreview(dataUrl);
             setImageError('');
-            setImageSourceLabel('网络图片链接');
+            setImageSourceLabel(t('base64.remoteImageSource'));
         } catch (error) {
-            setImageError(error instanceof Error ? error.message : '网络图片转换失败。');
+            setImageError(error instanceof Error ? error.message : t('base64.remoteImageFailed'));
         }
     }
 
     return (
         <section className="space-y-4">
-            <ModuleIntro
-                badge="B64"
-                title="Base64 编解码"
-                description="支持文字转 Base64 和反解析，也支持上传本地图片或输入网络图片链接转换为 Base64。"
-            />
+            <ModuleIntro badge="B64" title={t('base64.introTitle')} description={t('base64.introDescription')} />
 
             <section className="grid gap-4 xl:grid-cols-2">
                 <section className={panelClassName}>
                     <div>
-                        <p className="text-title-lg text-text-e">文字 Base64</p>
-                        <p className="mt-1 text-body-pc-md text-text-d">适合调试接口签名、认证串和基础文本编解码。</p>
+                        <p className="text-title-lg text-text-e">{t('base64.textTitle')}</p>
+                        <p className="mt-1 text-body-pc-md text-text-d">{t('base64.textDescription')}</p>
                     </div>
 
                     <div className="mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="base64-text-input">
-                            输入内容
+                            {t('base64.inputContent')}
                         </label>
                         <textarea
                             id="base64-text-input"
@@ -109,26 +107,26 @@ export function Base64Tool() {
                             onChange={(event) => {
                                 setTextInput(event.target.value);
                             }}
-                            placeholder="输入普通文字或 Base64 字符串"
+                            placeholder={t('base64.inputPlaceholder')}
                         />
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
-                        <Button onClick={handleEncodeText}>文字转 Base64</Button>
+                        <Button onClick={handleEncodeText}>{t('base64.encodeText')}</Button>
                         <Button variant="secondary" onClick={handleDecodeText}>
-                            解析 Base64
+                            {t('base64.decodeText')}
                         </Button>
                     </div>
 
                     <div className="mt-4">
                         <div className="flex items-center justify-between gap-3">
                             <label className="text-body-sm text-text-c" htmlFor="base64-text-output">
-                                输出结果
+                                {t('base64.outputResult')}
                             </label>
                             <CopyButton
                                 text={textError || textOutput}
                                 className="px-3 py-2 text-body-sm"
-                                idleLabel="复制结果"
+                                idleLabel={t('common.copyResult')}
                             />
                         </div>
                         <textarea
@@ -136,22 +134,20 @@ export function Base64Tool() {
                             className={textareaClassName}
                             value={textError || textOutput}
                             readOnly
-                            placeholder="转换结果会显示在这里"
+                            placeholder={t('base64.outputPlaceholder')}
                         />
                     </div>
                 </section>
 
                 <section className={panelClassName}>
                     <div>
-                        <p className="text-title-lg text-text-e">图片转 Base64</p>
-                        <p className="mt-1 text-body-pc-md text-text-d">
-                            支持上传本地图片，或通过网络图片链接转成 Data URL。
-                        </p>
+                        <p className="text-title-lg text-text-e">{t('base64.imageTitle')}</p>
+                        <p className="mt-1 text-body-pc-md text-text-d">{t('base64.imageDescription')}</p>
                     </div>
 
                     <div className="mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="image-url-input">
-                            网络图片链接
+                            {t('base64.remoteImageUrl')}
                         </label>
                         <input
                             id="image-url-input"
@@ -160,23 +156,25 @@ export function Base64Tool() {
                             onChange={(event) => {
                                 setImageUrl(event.target.value);
                             }}
-                            placeholder="https://example.com/image.png"
+                            placeholder={t('base64.remoteImagePlaceholder')}
                         />
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-2">
-                        <Button onClick={() => void handleImageUrl()}>转换链接图片</Button>
+                        <Button onClick={() => void handleImageUrl()}>{t('base64.convertRemoteImage')}</Button>
                         <label className="inline-flex">
                             <input type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
                             <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-title-md text-text-e transition hover:bg-fill-c">
-                                上传本地图片
+                                {t('base64.uploadLocalImage')}
                             </span>
                         </label>
                     </div>
 
                     {(imagePreview || imageSourceLabel) && (
                         <div className="mt-4 rounded-xl border border-neutral-j bg-fill-b p-3">
-                            <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">当前来源</p>
+                            <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">
+                                {t('base64.currentSource')}
+                            </p>
                             <p className="mt-1 text-body-pc-md text-text-e">{imageSourceLabel}</p>
                             {imagePreview && (
                                 <Image
@@ -194,12 +192,12 @@ export function Base64Tool() {
                     <div className="mt-4">
                         <div className="flex items-center justify-between gap-3">
                             <label className="text-body-sm text-text-c" htmlFor="image-base64-output">
-                                Base64 输出
+                                {t('base64.base64Output')}
                             </label>
                             <CopyButton
                                 text={imageError || imageBase64}
                                 className="px-3 py-2 text-body-sm"
-                                idleLabel="复制结果"
+                                idleLabel={t('common.copyResult')}
                             />
                         </div>
                         <textarea
@@ -207,7 +205,7 @@ export function Base64Tool() {
                             className={textareaClassName}
                             value={imageError || imageBase64}
                             readOnly
-                            placeholder="图片转换后的 Base64 会显示在这里"
+                            placeholder={t('base64.base64OutputPlaceholder')}
                         />
                     </div>
                 </section>

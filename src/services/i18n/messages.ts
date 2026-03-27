@@ -1,0 +1,461 @@
+import type { Language } from './constant';
+
+type TranslationVariables = Record<string, string | number>;
+
+const messages = {
+    zh: {
+        common: {
+            appTitle: '简易工具',
+            workspaceTitle: '轻量工具工作台',
+            modulesCount: '个常用模块已接入',
+            language: '语言',
+            selectPlaceholder: '请选择',
+            copyResult: '复制结果',
+            copied: '已复制',
+            copyFailed: '复制失败',
+            leave: '离开',
+            continueEditing: '继续编辑',
+            confirm: '确定',
+            currentBrowserTimezone: '当前浏览器时区: {{timezone}}',
+        },
+        confirmDialog: {
+            defaultTitle: '有未保存内容',
+            defaultDescription: '当前输入内容还未处理完成，离开后将保留在本次页面状态之外。确定继续离开吗？',
+        },
+        datePicker: {
+            time: '时间',
+            confirm: '确定',
+        },
+        timestamp: {
+            introTitle: '时间戳转换',
+            introDescription:
+                '适合调试接口、排查日志和核对前后端时间字段。左侧输入时间戳或日期时间，结果会在当前浏览器时区和 UTC 之间同步展示。',
+            fromTimestampTitle: '时间戳转日期',
+            fromTimestampDescription: '快速识别接口返回的秒级或毫秒级时间戳。',
+            useCurrentTime: '使用当前时间',
+            timestampValue: '时间戳数值',
+            timestampPlaceholder: '例如 1743043200000',
+            invalidTimestamp: '请输入有效的数字时间戳。',
+            browserTimezone: '浏览器时区 ({{timezone}})',
+            utc: 'UTC',
+            iso: 'ISO 8601',
+            relative: '相对时间',
+            toTimestampTitle: '日期转时间戳',
+            toTimestampDescription: '输入本地日期时间，快速换算成接口常用的 Unix 时间戳。',
+            fillCurrentTime: '填充当前时间',
+            localDateTime: '本地日期时间',
+            milliseconds: '毫秒',
+            seconds: '秒',
+            millisecondsTimestamp: '毫秒时间戳',
+            secondsTimestamp: '秒时间戳',
+            utcTime: 'UTC 时间',
+            justNow: '刚刚',
+            minutesLater: '{{value}} 分钟后',
+            minutesAgo: '{{value}} 分钟前',
+            hoursLater: '{{value}} 小时后',
+            hoursAgo: '{{value}} 小时前',
+            daysLater: '{{value}} 天后',
+            daysAgo: '{{value}} 天前',
+        },
+        exchangeRate: {
+            introTitle: '汇率转换',
+            introDescription: '默认内置一组常用参考汇率，适合报价、核算和日常换算。',
+            mainPanelTitle: '主换算面板',
+            mainPanelDescription: '基于 1 USD 对应各币种数量的参考值进行交叉换算。',
+            swap: '交换币种',
+            amount: '金额',
+            amountPlaceholder: '输入换算金额',
+            from: '从',
+            to: '到',
+            fromPlaceholder: '选择源币种',
+            toPlaceholder: '选择目标币种',
+            resultTitle: '换算结果',
+            enterAmount: '请输入有效金额后查看结果。',
+            batchTitle: '批量结果',
+            batchDescription: '以当前源币种为基准，快速查看其他币种的对应值。',
+            symbol: '符号',
+            currency: {
+                USD: '美元',
+                CNY: '人民币',
+                EUR: '欧元',
+                GBP: '英镑',
+                JPY: '日元',
+                HKD: '港币',
+                SGD: '新加坡元',
+            },
+        },
+        qrcode: {
+            introTitle: '二维码生成与反解',
+            introDescription: '支持文本生成二维码，也支持上传本地二维码图片或输入网络图片链接进行反解。',
+            generateTitle: '二维码生成',
+            generateDescription: '输入任意文字、链接或配置串，实时生成二维码。',
+            inputContent: '输入内容',
+            inputPlaceholder: '输入想编码到二维码中的文字或链接',
+            generateFailed: '二维码生成失败，请检查输入内容。',
+            generatePreviewPlaceholder: '生成后的二维码会显示在这里。',
+            decodeTitle: '二维码反解',
+            decodeDescription: '支持上传本地图片，或通过网络图片链接解析二维码内容。',
+            remoteImageUrl: '网络图片链接',
+            remoteImagePlaceholder: 'https://example.com/qr.png',
+            decodeRemoteImage: '解析链接图片',
+            uploadLocalImage: '上传本地图片',
+            noQrFound: '未识别到二维码，请更换更清晰的图片。',
+            decodeFailed: '二维码解析失败。',
+            currentImageSource: '当前图片来源',
+            localFileSource: '本地文件 · {{name}}',
+            remoteImageSource: '网络图片链接',
+            decodeResult: '解析结果',
+            waitingForImage: '等待图片输入。',
+            enterImageUrl: '请输入可访问的图片链接。',
+        },
+        base64: {
+            introTitle: 'Base64 编解码',
+            introDescription: '支持文字转 Base64 和反解析，也支持上传本地图片或输入网络图片链接转换为 Base64。',
+            textTitle: '文字 Base64',
+            textDescription: '适合调试接口签名、认证串和基础文本编解码。',
+            inputContent: '输入内容',
+            inputPlaceholder: '输入普通文字或 Base64 字符串',
+            encodeText: '文字转 Base64',
+            decodeText: '解析 Base64',
+            outputResult: '输出结果',
+            outputPlaceholder: '转换结果会显示在这里',
+            textEncodeFailed: '文字编码失败，请检查输入内容。',
+            textDecodeFailed: 'Base64 解析失败，请确认输入合法。',
+            imageTitle: '图片转 Base64',
+            imageDescription: '支持上传本地图片，或通过网络图片链接转成 Data URL。',
+            remoteImageUrl: '网络图片链接',
+            remoteImagePlaceholder: 'https://example.com/image.png',
+            convertRemoteImage: '转换链接图片',
+            uploadLocalImage: '上传本地图片',
+            enterImageUrl: '请输入网络图片链接。',
+            localImageFailed: '本地图片转换失败。',
+            remoteImageFailed: '网络图片转换失败。',
+            localFileSource: '本地文件 · {{name}}',
+            remoteImageSource: '网络图片链接',
+            currentSource: '当前来源',
+            base64Output: 'Base64 输出',
+            base64OutputPlaceholder: '图片转换后的 Base64 会显示在这里',
+        },
+        json: {
+            introTitle: 'JSON 校验与格式化',
+            introDescription: '用于校验 JSON 合法性，快速格式化输出，或压缩成单行 JSON 方便接口调试和日志处理。',
+            dirtyTitle: 'JSON 内容已修改',
+            dirtyDescription: '你对当前 JSON 做了自定义修改，切换到其他工具后将离开当前编辑状态，确定继续离开吗？',
+            statusIdle: '等待校验',
+            statusValid: 'JSON 合法',
+            statusFormatted: '已按 2 空格缩进格式化',
+            statusCompressed: '已压缩 JSON',
+            statusValidateFailed: 'JSON 校验失败',
+            statusFormatFailed: 'JSON 格式化失败',
+            statusCompressFailed: 'JSON 压缩失败',
+            panelTitle: 'JSON 工作台',
+            panelDescription: '输入原始 JSON 字符串后，可执行校验、格式化或压缩。',
+            validate: '校验',
+            format: '格式化',
+            compress: '压缩',
+            inputJson: '输入 JSON',
+            inputPlaceholder: '输入待校验的 JSON 字符串',
+            resultTitle: '处理结果',
+            resultPlaceholder: '格式化或压缩后的 JSON 会显示在这里',
+        },
+        markdown: {
+            introTitle: 'Markdown 实时编辑预览',
+            introDescription: '左侧输入 Markdown，右侧实时预览，适合边写边看并快速复制 Markdown 原文。',
+            dirtyTitle: 'Markdown 内容已修改',
+            dirtyDescription:
+                '你正在编辑的 Markdown 还有未确认的自定义内容，切换到其他工具后将离开当前编辑状态，确定继续离开吗？',
+            editorTitle: 'Markdown 编辑区',
+            editorDescription: '支持 GFM 语法、代码块、表格和任务列表。',
+            previewTitle: '实时预览',
+            previewDescription: '预览区与输入内容保持同步，便于边写边看。',
+            copyMarkdown: '复制 Markdown',
+            sample: `# Markdown Playground
+
+支持 **实时编辑**、表格、任务列表和代码块。
+
+## 功能清单
+
+- 左侧输入 Markdown
+- 右侧实时预览
+- 一边编辑一边查看效果
+
+\`\`\`ts
+const tool = 'markdown';
+console.log(tool);
+\`\`\`
+
+| 名称 | 说明 |
+| --- | --- |
+| format | GFM |
+| preview | live |
+`,
+        },
+        network: {
+            introTitle: '网络测速工具',
+            introDescription: '支持输入 IP、域名或完整 URL，测试服务端请求的可达性、响应耗时和采样下载速度。',
+            inputTitle: '测速输入',
+            inputDescription: '可直接输入 `1.1.1.1`、`example.com` 或 `https://example.com/path`。',
+            target: '测试目标',
+            targetPlaceholder: 'example.com 或 8.8.8.8',
+            startProbe: '开始测速',
+            resultTitle: '测速结果',
+            resultDescription: '显示响应状态、解析 IP、耗时和采样吞吐。',
+            waitingResult: '结果将在这里展示。',
+            invalidTarget: '请输入待测试的 IP、域名或 URL。',
+            probeFailed: '测速失败',
+            normalizedUrl: '规范化地址',
+            resolvedAddress: '解析 IP',
+            dnsMs: 'DNS 耗时',
+            headerMs: '响应头耗时',
+            totalMs: '总耗时',
+            sampleMbps: '采样速率',
+            ok: '成功',
+            fail: '失败',
+        },
+    },
+    en: {
+        common: {
+            appTitle: 'Simple Tools',
+            workspaceTitle: 'Lightweight Tool Workspace',
+            modulesCount: 'tools available',
+            language: 'Language',
+            selectPlaceholder: 'Select',
+            copyResult: 'Copy Result',
+            copied: 'Copied',
+            copyFailed: 'Copy Failed',
+            leave: 'Leave',
+            continueEditing: 'Stay',
+            confirm: 'Confirm',
+            currentBrowserTimezone: 'Browser time zone: {{timezone}}',
+        },
+        confirmDialog: {
+            defaultTitle: 'Unsaved changes',
+            defaultDescription: 'You still have unsaved content on this page. Leave this tool anyway?',
+        },
+        datePicker: {
+            time: 'Time',
+            confirm: 'Confirm',
+        },
+        timestamp: {
+            introTitle: 'Timestamp Converter',
+            introDescription:
+                'Useful for API debugging, log inspection and validating time fields across client and server. Convert between timestamps and local or UTC time.',
+            fromTimestampTitle: 'Timestamp to Date',
+            fromTimestampDescription: 'Quickly inspect second or millisecond timestamps from APIs.',
+            useCurrentTime: 'Use Current Time',
+            timestampValue: 'Timestamp Value',
+            timestampPlaceholder: 'For example 1743043200000',
+            invalidTimestamp: 'Please enter a valid numeric timestamp.',
+            browserTimezone: 'Browser Time Zone ({{timezone}})',
+            utc: 'UTC',
+            iso: 'ISO 8601',
+            relative: 'Relative',
+            toTimestampTitle: 'Date to Timestamp',
+            toTimestampDescription: 'Convert a local date and time into common Unix timestamps.',
+            fillCurrentTime: 'Fill Current Time',
+            localDateTime: 'Local Date Time',
+            milliseconds: 'Milliseconds',
+            seconds: 'Seconds',
+            millisecondsTimestamp: 'Millisecond Timestamp',
+            secondsTimestamp: 'Second Timestamp',
+            utcTime: 'UTC Time',
+            justNow: 'Just now',
+            minutesLater: 'In {{value}} minutes',
+            minutesAgo: '{{value}} minutes ago',
+            hoursLater: 'In {{value}} hours',
+            hoursAgo: '{{value}} hours ago',
+            daysLater: 'In {{value}} days',
+            daysAgo: '{{value}} days ago',
+        },
+        exchangeRate: {
+            introTitle: 'Exchange Rate Converter',
+            introDescription:
+                'Built with a common reference rate set for quick pricing and day-to-day currency conversion.',
+            mainPanelTitle: 'Main Converter',
+            mainPanelDescription: 'Cross-convert currencies using the reference quantity of each currency per 1 USD.',
+            swap: 'Swap Currencies',
+            amount: 'Amount',
+            amountPlaceholder: 'Enter amount',
+            from: 'From',
+            to: 'To',
+            fromPlaceholder: 'Select source currency',
+            toPlaceholder: 'Select target currency',
+            resultTitle: 'Conversion Result',
+            enterAmount: 'Enter a valid amount to see the result.',
+            batchTitle: 'Batch Result',
+            batchDescription: 'See the equivalent value in other currencies based on the current source currency.',
+            symbol: 'Symbol',
+            currency: {
+                USD: 'US Dollar',
+                CNY: 'Chinese Yuan',
+                EUR: 'Euro',
+                GBP: 'British Pound',
+                JPY: 'Japanese Yen',
+                HKD: 'Hong Kong Dollar',
+                SGD: 'Singapore Dollar',
+            },
+        },
+        qrcode: {
+            introTitle: 'QR Code Generator & Decoder',
+            introDescription:
+                'Generate QR codes from text, or decode QR content from local files and remote image links.',
+            generateTitle: 'Generate QR Code',
+            generateDescription: 'Enter text, URLs or configuration strings to generate a QR code instantly.',
+            inputContent: 'Content',
+            inputPlaceholder: 'Enter text or URL to encode into a QR code',
+            generateFailed: 'Failed to generate the QR code.',
+            generatePreviewPlaceholder: 'The generated QR code will appear here.',
+            decodeTitle: 'Decode QR Code',
+            decodeDescription: 'Upload a local image or use a remote image URL to decode QR content.',
+            remoteImageUrl: 'Remote Image URL',
+            remoteImagePlaceholder: 'https://example.com/qr.png',
+            decodeRemoteImage: 'Decode Remote Image',
+            uploadLocalImage: 'Upload Local Image',
+            noQrFound: 'No QR code was detected. Please try a clearer image.',
+            decodeFailed: 'Failed to decode the QR code.',
+            currentImageSource: 'Current Image Source',
+            localFileSource: 'Local file · {{name}}',
+            remoteImageSource: 'Remote image URL',
+            decodeResult: 'Decoded Result',
+            waitingForImage: 'Waiting for image input.',
+            enterImageUrl: 'Please enter a reachable image URL.',
+        },
+        base64: {
+            introTitle: 'Base64 Encode & Decode',
+            introDescription:
+                'Encode plain text to Base64, decode Base64 back to text, and convert local or remote images to Base64.',
+            textTitle: 'Text Base64',
+            textDescription: 'Useful for API signatures, credentials and basic text encoding workflows.',
+            inputContent: 'Input',
+            inputPlaceholder: 'Enter plain text or a Base64 string',
+            encodeText: 'Encode Text',
+            decodeText: 'Decode Base64',
+            outputResult: 'Output',
+            outputPlaceholder: 'The converted result will appear here',
+            textEncodeFailed: 'Failed to encode the text.',
+            textDecodeFailed: 'Failed to decode the Base64 string.',
+            imageTitle: 'Image to Base64',
+            imageDescription: 'Upload a local image or convert a remote image URL into a Data URL.',
+            remoteImageUrl: 'Remote Image URL',
+            remoteImagePlaceholder: 'https://example.com/image.png',
+            convertRemoteImage: 'Convert Remote Image',
+            uploadLocalImage: 'Upload Local Image',
+            enterImageUrl: 'Please enter an image URL.',
+            localImageFailed: 'Failed to convert the local image.',
+            remoteImageFailed: 'Failed to convert the remote image.',
+            localFileSource: 'Local file · {{name}}',
+            remoteImageSource: 'Remote image URL',
+            currentSource: 'Current Source',
+            base64Output: 'Base64 Output',
+            base64OutputPlaceholder: 'The image Base64 result will appear here',
+        },
+        json: {
+            introTitle: 'JSON Validator & Formatter',
+            introDescription:
+                'Validate JSON, format it for readability, or compress it into a single line for debugging.',
+            dirtyTitle: 'JSON content changed',
+            dirtyDescription:
+                'You have custom JSON changes. Leaving this tool will abandon the current editing state. Continue?',
+            statusIdle: 'Waiting for validation',
+            statusValid: 'JSON is valid',
+            statusFormatted: 'Formatted with 2-space indentation',
+            statusCompressed: 'JSON compressed',
+            statusValidateFailed: 'JSON validation failed',
+            statusFormatFailed: 'JSON formatting failed',
+            statusCompressFailed: 'JSON compression failed',
+            panelTitle: 'JSON Workspace',
+            panelDescription: 'Enter raw JSON and validate, pretty-print, or compress it.',
+            validate: 'Validate',
+            format: 'Format',
+            compress: 'Compress',
+            inputJson: 'JSON Input',
+            inputPlaceholder: 'Enter the JSON string to validate',
+            resultTitle: 'Result',
+            resultPlaceholder: 'The formatted or compressed JSON will appear here',
+        },
+        markdown: {
+            introTitle: 'Markdown Live Preview',
+            introDescription: 'Edit Markdown on the left and preview the rendered result on the right.',
+            dirtyTitle: 'Markdown content changed',
+            dirtyDescription:
+                'You have unconfirmed Markdown changes. Leaving this tool will abandon the current editing state. Continue?',
+            editorTitle: 'Markdown Editor',
+            editorDescription: 'Supports GFM syntax, code blocks, tables and task lists.',
+            previewTitle: 'Live Preview',
+            previewDescription: 'The preview updates in real time while you edit.',
+            copyMarkdown: 'Copy Markdown',
+            sample: `# Markdown Playground
+
+Supports **live editing**, tables, task lists and code blocks.
+
+## Feature Checklist
+
+- Edit Markdown on the left
+- Preview rendered output on the right
+- Iterate on content in real time
+
+\`\`\`ts
+const tool = 'markdown';
+console.log(tool);
+\`\`\`
+
+| Name | Value |
+| --- | --- |
+| format | GFM |
+| preview | live |
+`,
+        },
+        network: {
+            introTitle: 'Network Speed Tool',
+            introDescription:
+                'Test IPs, domains or full URLs for reachability, latency and sampled download throughput.',
+            inputTitle: 'Probe Input',
+            inputDescription: 'Enter values such as `1.1.1.1`, `example.com`, or `https://example.com/path`.',
+            target: 'Target',
+            targetPlaceholder: 'example.com or 8.8.8.8',
+            startProbe: 'Start Test',
+            resultTitle: 'Probe Result',
+            resultDescription: 'Shows status, resolved IP, timings and sampled throughput.',
+            waitingResult: 'Results will appear here.',
+            invalidTarget: 'Please enter an IP, domain or URL to test.',
+            probeFailed: 'Probe failed',
+            normalizedUrl: 'Normalized URL',
+            resolvedAddress: 'Resolved IP',
+            dnsMs: 'DNS Time',
+            headerMs: 'Header Time',
+            totalMs: 'Total Time',
+            sampleMbps: 'Sample Speed',
+            ok: 'Success',
+            fail: 'Fail',
+        },
+    },
+} as const;
+
+function resolveMessage(language: Language, key: string) {
+    return key.split('.').reduce<unknown>((currentValue, currentKey) => {
+        if (currentValue && typeof currentValue === 'object' && currentKey in currentValue) {
+            return (currentValue as Record<string, unknown>)[currentKey];
+        }
+
+        return undefined;
+    }, messages[language]);
+}
+
+export function translate(language: Language, key: string, variables?: TranslationVariables) {
+    const resolved = resolveMessage(language, key);
+
+    if (typeof resolved !== 'string') {
+        return key;
+    }
+
+    if (!variables) {
+        return resolved;
+    }
+
+    return resolved.replace(/\{\{(.*?)\}\}/g, (_, variableName: string) => {
+        const trimmedKey = variableName.trim();
+        const value = variables[trimmedKey];
+
+        return value === undefined ? '' : String(value);
+    });
+}

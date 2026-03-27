@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/libs/utils';
 import { toolModules } from '@/modules/tool-registry';
+import { useI18n } from '@/services/i18n';
+import { resolveLocalizedText } from '@/services/i18n/constant';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 import { useNavTransition } from '@/services/useNavTransition';
 
@@ -10,6 +12,7 @@ import { useNavTransition } from '@/services/useNavTransition';
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const { language } = useI18n();
     const { startTransition } = useNavTransition();
     const { confirmLeave } = useLeaveConfirm();
 
@@ -23,8 +26,8 @@ export function Sidebar() {
                         <button
                             key={tool.slug}
                             type="button"
-                            aria-label={tool.title}
-                            title={tool.title}
+                            aria-label={resolveLocalizedText(language, tool.title)}
+                            title={resolveLocalizedText(language, tool.title)}
                             onClick={() => {
                                 if (isActive) {
                                     return;
@@ -62,7 +65,9 @@ export function Sidebar() {
                             <div className="hidden min-w-0 flex-1 xl:block">
                                 <div className="flex items-center gap-2">
                                     <span className="text-body-xs text-inherit/70">{`0${index + 1}`}</span>
-                                    <h3 className="text-title-sm text-inherit">{tool.title}</h3>
+                                    <h3 className="text-title-sm text-inherit">
+                                        {resolveLocalizedText(language, tool.title)}
+                                    </h3>
                                 </div>
                                 <p
                                     className={cn(
@@ -70,7 +75,7 @@ export function Sidebar() {
                                         isActive ? 'text-text-a/84' : 'text-text-d',
                                     )}
                                 >
-                                    {tool.description}
+                                    {resolveLocalizedText(language, tool.description)}
                                 </p>
                             </div>
                         </button>

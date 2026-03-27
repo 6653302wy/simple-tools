@@ -1,6 +1,7 @@
 'use client';
 
 import jsQR from 'jsqr';
+import type { Language } from '@/services/i18n/constant';
 
 export async function blobToDataUrl(blob: Blob) {
     return await new Promise<string>((resolve, reject) => {
@@ -23,8 +24,14 @@ export async function blobToDataUrl(blob: Blob) {
     });
 }
 
-export async function fetchRemoteImageBlob(url: string) {
-    const response = await fetch(`/api/image-proxy?url=${encodeURIComponent(url)}`, {
+export async function fetchRemoteImageBlob(url: string, language?: Language) {
+    const searchParams = new URLSearchParams({ url });
+
+    if (language) {
+        searchParams.set('lang', language);
+    }
+
+    const response = await fetch(`/api/image-proxy?${searchParams.toString()}`, {
         cache: 'no-store',
     });
 

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CopyButton } from '@/components/CopyButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
+import { useI18n } from '@/services/i18n';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 
 const textareaClassName =
@@ -12,27 +13,6 @@ const textareaClassName =
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 const previewViewportClassName =
     'mt-4 min-h-80 overflow-y-auto rounded-xl border border-neutral-j bg-fill-b p-4 lg:min-h-[26rem] lg:max-h-[calc(100vh-20rem)]';
-
-const initialMarkdown = `# Markdown Playground
-
-支持 **实时编辑**、表格、任务列表和代码块。
-
-## 功能清单
-
-- 左侧输入 Markdown
-- 右侧实时预览
-- 下方复制渲染后的 HTML 结果
-
-\`\`\`ts
-const tool = 'markdown';
-console.log(tool);
-\`\`\`
-
-| Name | Value |
-| --- | --- |
-| format | GFM |
-| preview | live |
-`;
 
 const markdownComponents = {
     h1: ({ ...props }: React.ComponentProps<'h1'>) => <h1 className="text-headline-sm text-text-e" {...props} />,
@@ -90,16 +70,26 @@ const markdownComponents = {
 };
 
 export function MarkdownTool() {
-    const [markdown, setMarkdown] = useState(initialMarkdown);
+    const { t } = useI18n();
+    const localizedSample = t('markdown.sample');
+    const previousSampleRef = useRef(localizedSample);
+    const [markdown, setMarkdown] = useState(localizedSample);
     const { setGuard } = useLeaveConfirm();
-    const isDirty = markdown !== initialMarkdown;
+    const isDirty = markdown !== localizedSample;
+
+    useEffect(() => {
+        if (markdown === previousSampleRef.current) {
+            setMarkdown(localizedSample);
+        }
+
+        previousSampleRef.current = localizedSample;
+    }, [localizedSample, markdown]);
 
     useEffect(() => {
         setGuard({
             active: isDirty,
-            title: 'Markdown 内容已修改',
-            description:
-                '你正在编辑的 Markdown 还有未确认的自定义内容，切换到其他工具后将离开当前编辑状态，确定继续离开吗？',
+            title: t('markdown.dirtyTitle'),
+            description: t('markdown.dirtyDescription'),
         });
 
         return () => {
@@ -109,25 +99,25 @@ export function MarkdownTool() {
                 description: '',
             });
         };
-    }, [isDirty, setGuard]);
+    }, [isDirty, setGuard, t]);
 
     return (
         <section className="space-y-4">
-            <ModuleIntro
-                badge="MD"
-                title="Markdown 实时编辑预览"
-                description="左侧输入 Markdown，右侧实时预览，适合边写边看并快速复制 Markdown 原文。"
-            />
+            <ModuleIntro badge="MD" title={t('markdown.introTitle')} description={t('markdown.introDescription')} />
 
             <section className="grid gap-4 xl:grid-cols-2">
                 <section className={panelClassName}>
                     <div className="flex items-start justify-between gap-4">
                         <div>
-                            <p className="text-title-lg text-text-e">Markdown 编辑区</p>
-                            <p className="mt-1 text-body-pc-md text-text-d">支持 GFM 语法、代码块、表格和任务列表。</p>
+                            <p className="text-title-lg text-text-e">{t('markdown.editorTitle')}</p>
+                            <p className="mt-1 text-body-pc-md text-text-d">{t('markdown.editorDescription')}</p>
                         </div>
 
-                        <CopyButton text={markdown} className="px-3 py-2 text-body-sm" idleLabel="复制 Markdown" />
+                        <CopyButton
+                            text={markdown}
+                            className="px-3 py-2 text-body-sm"
+                            idleLabel={t('markdown.copyMarkdown')}
+                        />
                     </div>
 
                     <textarea
@@ -141,8 +131,8 @@ export function MarkdownTool() {
 
                 <section className={panelClassName}>
                     <div>
-                        <p className="text-title-lg text-text-e">实时预览</p>
-                        <p className="mt-1 text-body-pc-md text-text-d">预览区与输入内容保持同步，便于边写边看。</p>
+                        <p className="text-title-lg text-text-e">{t('markdown.previewTitle')}</p>
+                        <p className="mt-1 text-body-pc-md text-text-d">{t('markdown.previewDescription')}</p>
                     </div>
 
                     <div className={previewViewportClassName}>

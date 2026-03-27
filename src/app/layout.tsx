@@ -8,6 +8,7 @@ import utc from 'dayjs/plugin/utc';
 import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Layout } from '@/Layout';
+import { I18nProvider } from '@/services/i18n';
 import { DomIdEnum, StorageEnum } from '@/services/types';
 
 dayjs.extend(duration);
@@ -35,7 +36,7 @@ const rajdhani = localFont({
 
 export const metadata: Metadata = {
     title: 'SIMPLE TOOLS',
-    description: '简易工具合集',
+    description: 'Simple tools workspace',
 };
 
 export default function RootLayout({
@@ -43,8 +44,8 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const lang = 'en';
-    const locale = 'en';
+    const lang = 'zh-CN';
+    const locale = 'zh-CN';
     const serverTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     return (
         <html
@@ -93,9 +94,11 @@ export default function RootLayout({
             <body suppressHydrationWarning>
                 {/** 业务路由容器 */}
                 <section className="relative z-10 min-h-screen" id={DomIdEnum.AppContainer}>
-                    <ThemeProvider>
-                        <Layout>{children}</Layout>
-                    </ThemeProvider>
+                    <I18nProvider>
+                        <ThemeProvider>
+                            <Layout>{children}</Layout>
+                        </ThemeProvider>
+                    </I18nProvider>
                 </section>
             </body>
         </html>
