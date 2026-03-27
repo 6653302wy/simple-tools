@@ -9,19 +9,11 @@ import { useNavTransition } from '@/services/useNavTransition';
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const { isPending, startTransition } = useNavTransition();
+    const { startTransition } = useNavTransition();
 
     return (
-        <aside className="rounded-lg border border-neutral-j bg-[linear-gradient(180deg,var(--fill-a)_0%,rgba(198,236,211,0.58)_100%)] p-4 shadow-[0_24px_56px_rgba(0,54,22,0.08)]">
-            <div className="rounded-md border border-neutral-j bg-fill-a p-4">
-                <p className="text-body-xs uppercase tracking-[0.24em] text-primary-500">{`Tools Workspace`}</p>
-                <h2 className="mt-3 text-title-xl text-primary-700" style={{ fontFamily: 'var(--font-rajdhani)' }}>
-                    Modules
-                </h2>
-                <p className="mt-2 text-body-pc-md text-text-d">左侧选择工具，右侧即时完成对应换算与处理。</p>
-            </div>
-
-            <nav className="mt-4 space-y-3">
+        <aside className="rounded-2xl border border-neutral-j bg-[linear-gradient(180deg,var(--fill-a)_0%,rgba(198,236,211,0.58)_100%)] p-2 shadow-[0_24px_56px_rgba(0,54,22,0.08)] xl:rounded-3xl xl:p-4">
+            <nav className="space-y-3">
                 {toolModules.map((tool, index) => {
                     const isActive = pathname.startsWith(tool.href);
 
@@ -29,6 +21,8 @@ export function Sidebar() {
                         <button
                             key={tool.slug}
                             type="button"
+                            aria-label={tool.title}
+                            title={tool.title}
                             onClick={() => {
                                 if (isActive) {
                                     return;
@@ -39,7 +33,7 @@ export function Sidebar() {
                                 });
                             }}
                             className={cn(
-                                'group flex w-full items-start gap-3 rounded-lg border p-4 text-left transition duration-200',
+                                'group flex w-full items-center justify-center rounded-xl border p-2.5 text-left transition duration-200 xl:items-start xl:justify-start xl:gap-3 xl:p-4',
                                 isActive
                                     ? 'border-primary-500 bg-primary-400 text-text-a shadow-[0_18px_32px_rgba(0,155,57,0.22)]'
                                     : 'border-transparent bg-fill-a hover:border-primary-200 hover:bg-primary-100/60',
@@ -47,17 +41,21 @@ export function Sidebar() {
                         >
                             <div
                                 className={cn(
-                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-md border text-body-sm',
+                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border',
                                     isActive
                                         ? 'border-neutral-h bg-neutral-a text-text-a'
                                         : 'border-primary-200 bg-primary-100 text-primary-600',
                                 )}
-                                style={{ fontFamily: 'var(--font-rajdhani)' }}
                             >
-                                {tool.badge}
+                                <span
+                                    className="text-body-sm whitespace-nowrap"
+                                    style={{ fontFamily: 'var(--font-rajdhani)' }}
+                                >
+                                    {tool.badge}
+                                </span>
                             </div>
 
-                            <div className="min-w-0 flex-1">
+                            <div className="hidden min-w-0 flex-1 xl:block">
                                 <div className="flex items-center gap-2">
                                     <span className="text-body-xs text-inherit/70">{`0${index + 1}`}</span>
                                     <h3 className="text-title-sm text-inherit">{tool.title}</h3>
@@ -75,8 +73,6 @@ export function Sidebar() {
                     );
                 })}
             </nav>
-
-            
         </aside>
     );
 }

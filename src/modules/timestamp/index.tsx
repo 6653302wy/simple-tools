@@ -3,8 +3,8 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useState } from 'react';
-import { cn } from '@/libs/utils';
 import { ModuleIntro } from '@/components/ModuleIntro';
+import { cn } from '@/libs/utils';
 
 dayjs.extend(utc);
 
@@ -16,8 +16,8 @@ const timestampUnitOptions: Array<{ label: string; value: TimestampUnit }> = [
 ];
 
 const inputClassName =
-    'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-4 py-3 text-body-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
-const panelClassName = 'rounded-[24px] border border-neutral-j bg-fill-a p-5 shadow-[0_18px_48px_rgba(0,54,22,0.08)]';
+    'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
+const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 
 function formatDateTimeInput(value: dayjs.Dayjs) {
     return value.format('YYYY-MM-DDTHH:mm');
@@ -95,19 +95,19 @@ export function TimestampConverter() {
             : [];
 
     return (
-        <section className="space-y-6">
+        <section className="space-y-4">
             <ModuleIntro
                 badge="MODULE / TIME"
                 title="时间戳转换"
                 description="适合调试接口、排查日志和核对前后端时间字段。左侧输入时间戳或日期时间，结果会在当前浏览器时区和 UTC 之间同步展示。"
             />
 
-            <section className="grid gap-6 xl:grid-cols-2">
+            <section className="grid gap-4 xl:grid-cols-2">
                 <section className={panelClassName}>
                     <div className="flex items-start justify-between gap-4">
                         <div>
                             <p className="text-title-lg text-text-e">时间戳转日期</p>
-                            <p className="mt-2 text-body-pc-md text-text-d">快速识别接口返回的秒级或毫秒级时间戳。</p>
+                            <p className="mt-1 text-body-pc-md text-text-d">快速识别接口返回的秒级或毫秒级时间戳。</p>
                         </div>
 
                         <button
@@ -118,13 +118,13 @@ export function TimestampConverter() {
                                 setTimestampUnit('milliseconds');
                                 setTimestampInput(String(currentTimestamp));
                             }}
-                            className="rounded-full border border-primary-200 bg-primary-100 px-4 py-2 text-body-sm text-primary-600 transition hover:bg-primary-200"
+                            className="shrink-0 whitespace-nowrap rounded-full border border-primary-200 bg-primary-100 px-4 py-2 text-body-sm text-primary-600 transition hover:bg-primary-200"
                         >
                             使用当前时间
                         </button>
                     </div>
 
-                    <div className="mt-6">
+                    <div className="mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="timestamp-input">
                             时间戳数值
                         </label>
@@ -140,7 +140,7 @@ export function TimestampConverter() {
                         />
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                         {timestampUnitOptions.map((option) => {
                             const isActive = option.value === timestampUnit;
 
@@ -152,7 +152,7 @@ export function TimestampConverter() {
                                         setTimestampUnit(option.value);
                                     }}
                                     className={cn(
-                                        'rounded-full px-4 py-2 text-body-sm transition',
+                                        'shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-body-sm transition',
                                         isActive
                                             ? 'bg-primary-400 text-text-a shadow-[0_10px_20px_rgba(0,155,57,0.18)]'
                                             : 'bg-fill-b text-text-d hover:bg-primary-100',
@@ -164,16 +164,16 @@ export function TimestampConverter() {
                         })}
                     </div>
 
-                    <div className="mt-6 grid gap-3">
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
                         {timestampError ? (
                             <p className="rounded-lg border border-warning bg-[rgba(255,199,0,0.14)] px-4 py-3 text-body-pc-md text-text-e">
                                 {timestampError}
                             </p>
                         ) : (
                             timestampRows.map((row) => (
-                                <div key={row.label} className="rounded-lg border border-neutral-j bg-fill-b px-4 py-3">
+                                <div key={row.label} className="rounded-lg border border-neutral-j bg-fill-b px-3 py-3">
                                     <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">{row.label}</p>
-                                    <p className="mt-2 break-all text-title-sm text-text-e">{row.value}</p>
+                                    <p className="mt-1.5 break-all text-title-sm text-text-e">{row.value}</p>
                                 </div>
                             ))
                         )}
@@ -184,7 +184,7 @@ export function TimestampConverter() {
                     <div className="flex items-start justify-between gap-4">
                         <div>
                             <p className="text-title-lg text-text-e">日期转时间戳</p>
-                            <p className="mt-2 text-body-pc-md text-text-d">
+                            <p className="mt-1 text-body-pc-md text-text-d">
                                 输入本地日期时间，快速换算成接口常用的 Unix 时间戳。
                             </p>
                         </div>
@@ -194,13 +194,13 @@ export function TimestampConverter() {
                             onClick={() => {
                                 setDateInput(formatDateTimeInput(dayjs()));
                             }}
-                            className="rounded-full border border-auxiliary-blue bg-[rgba(0,97,186,0.08)] px-4 py-2 text-body-sm text-auxiliary-blue transition hover:bg-[rgba(0,97,186,0.14)]"
+                            className="shrink-0 whitespace-nowrap rounded-full border border-auxiliary-blue bg-[rgba(0,97,186,0.08)] px-4 py-2 text-body-sm text-auxiliary-blue transition hover:bg-[rgba(0,97,186,0.14)]"
                         >
                             填充当前时间
                         </button>
                     </div>
 
-                    <div className="mt-6">
+                    <div className="mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="datetime-input">
                             本地日期时间
                         </label>
@@ -216,16 +216,16 @@ export function TimestampConverter() {
                         <p className="mt-2 text-body-xs text-text-c">{`当前浏览器时区: ${browserTimezone}`}</p>
                     </div>
 
-                    <div className="mt-6 grid gap-3">
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
                         {dateError ? (
                             <p className="rounded-lg border border-warning bg-[rgba(255,199,0,0.14)] px-4 py-3 text-body-pc-md text-text-e">
                                 {dateError}
                             </p>
                         ) : (
                             dateRows.map((row) => (
-                                <div key={row.label} className="rounded-lg border border-neutral-j bg-fill-b px-4 py-3">
+                                <div key={row.label} className="rounded-lg border border-neutral-j bg-fill-b px-3 py-3">
                                     <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">{row.label}</p>
-                                    <p className="mt-2 break-all text-title-sm text-text-e">{row.value}</p>
+                                    <p className="mt-1.5 break-all text-title-sm text-text-e">{row.value}</p>
                                 </div>
                             ))
                         )}
