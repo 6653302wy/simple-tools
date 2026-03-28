@@ -7,6 +7,9 @@ APP_NAME="${APP_NAME:-simple-tools}"
 BRANCH="${BRANCH:-main}"
 REMOTE="${REMOTE:-origin}"
 RELOAD_NGINX="${RELOAD_NGINX:-1}"
+HEALTHCHECK_URL="${HEALTHCHECK_URL:-http://127.0.0.1:3000/timestamp}"
+HEALTHCHECK_RETRIES="${HEALTHCHECK_RETRIES:-30}"
+HEALTHCHECK_INTERVAL="${HEALTHCHECK_INTERVAL:-2}"
 
 cd "$APP_DIR"
 
@@ -37,6 +40,23 @@ if [[ "$RELOAD_NGINX" == "1" ]]; then
 fi
 
 echo "[deploy] health check"
-curl -fsSI "http://127.0.0.1:3000/timestamp" >/dev/null
+healthcheck_ok=0
+
+for attempt in $(seq 1 "$HEALTHCHECK_RETRIES"); do
+    if curl -fsSI "$HEALTHCHECK_URL" >/dev/null; then
+        healthcheck_ok=1
+        break
+    fi
+
+    echo "[deploy] waiting for app to become healthy (${attempt}/${HEALTHCHECK_RETRIES})"
+    sleep "$HEALTHCHECK_INTERVAL"
+done
+
+if [[ "$healthcheck_ok" != "1" ]]; then
+    echo "[deploy] health check failed"
+    pm2 describe "$APP_NAME" || true
+    pm2 logs "$APP_NAME" --lines 50 --nostream || true
+    exit 1
+fi
 
 echo "[deploy] done"
