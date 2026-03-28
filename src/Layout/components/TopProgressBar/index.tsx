@@ -84,7 +84,7 @@ export const TopProgressBar: FC = () => {
     if (!shouldShow || progress === 0) return null;
 
     return (
-        <div className="pointer-events-none fixed top-14 z-50 h-1.5 w-full bg-fill-c/70">
+        <div className="pointer-events-none fixed top-14 z-50 h-1 w-full bg-fill-c/70">
             <div
                 style={{
                     width: `${progress}%`,

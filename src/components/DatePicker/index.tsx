@@ -6,7 +6,7 @@ import utc from 'dayjs/plugin/utc';
 import { type FC, useEffect, useState } from 'react';
 import type { DayPickerLocale, DayPickerProps } from 'react-day-picker';
 import { DayPicker } from 'react-day-picker';
-import { enUS, es, pt, zhCN } from 'react-day-picker/locale';
+import { enUS, zhCN } from 'react-day-picker/locale';
 import { Select } from '@/components/Select';
 import { cn } from '@/libs/utils';
 import { useI18n, useI18nLanguage, useI18nTimezone } from '@/services/i18n';
