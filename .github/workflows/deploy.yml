@@ -48,6 +48,9 @@ jobs:
             git clone '$REPO_URL' '$APP_DIR'
           fi
           cd '$APP_DIR'
+          git fetch origin '$BRANCH'
+          git checkout '$BRANCH'
+          git pull --ff-only origin '$BRANCH'
           APP_DIR='$APP_DIR' APP_NAME='$APP_NAME' BRANCH='$BRANCH' RELOAD_NGINX='$RELOAD_NGINX' bash scripts/server-deploy.sh
           "
 
