@@ -42,15 +42,15 @@ export function Sidebar() {
                             className={cn(
                                 'group flex w-full items-center justify-center rounded-xl border p-2.5 text-left transition duration-200 xl:items-start xl:justify-start xl:gap-3 xl:p-4',
                                 isActive
-                                    ? 'border-primary-500 bg-primary-400 text-text-a shadow-[0_18px_32px_rgba(0,155,57,0.22)]'
-                                    : 'border-transparent bg-fill-a hover:border-primary-200 hover:bg-primary-100/60',
+                                    ? 'border-primary-400 bg-primary-300 text-neutral-h shadow-[0_18px_32px_rgba(0,155,57,0.22)]'
+                                    : 'border-transparent bg-fill-a hover:border-primary-200 hover:bg-primary-100/60 shadow-[0_10px_20px_rgba(0,155,57,0.22)]',
                             )}
                         >
                             <div
                                 className={cn(
                                     'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border',
                                     isActive
-                                        ? 'border-neutral-h bg-neutral-a text-text-a'
+                                        ? 'border-neutral-h bg-neutral-a text-neutral-h'
                                         : 'border-primary-200 bg-primary-100 text-primary-600',
                                 )}
                             >

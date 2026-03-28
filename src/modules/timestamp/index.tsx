@@ -162,7 +162,7 @@ export function TimestampConverter() {
                                     className={cn(
                                         'shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-body-sm transition',
                                         isActive
-                                            ? 'bg-primary-400 text-text-a shadow-[0_10px_20px_rgba(0,155,57,0.18)]'
+                                            ? 'bg-primary-400 text-text-a '
                                             : 'bg-fill-b text-text-d hover:bg-primary-100',
                                     )}
                                 >

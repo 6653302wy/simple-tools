@@ -184,7 +184,7 @@ export function QrCodeTool() {
                                 placeholder={t('qrcode.remoteImagePlaceholder')}
                             />
                             <div className="mt-3 flex flex-wrap gap-2">
-                                <Button variant="secondary" onClick={() => void handleUrlDecode()}>
+                                <Button  onClick={() => void handleUrlDecode()}>
                                     {t('qrcode.decodeRemoteImage')}
                                 </Button>
                                 <label className="inline-flex">
@@ -194,7 +194,7 @@ export function QrCodeTool() {
                                         className="hidden"
                                         onChange={handleFileDecode}
                                     />
-                                    <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-title-md text-text-e transition hover:bg-fill-c">
+                                    <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-body-md text-text-e transition hover:bg-fill-c">
                                         {t('qrcode.uploadLocalImage')}
                                     </span>
                                 </label>

@@ -100,7 +100,7 @@ export function JsonTools() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                    <Button onClick={handleValidate}>{t('json.validate')}</Button>
+                    <Button variant="secondary" onClick={handleValidate}>{t('json.validate')}</Button>
                     <Button variant="secondary" onClick={handleFormat}>
                         {t('json.format')}
                     </Button>

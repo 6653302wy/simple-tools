@@ -31,7 +31,7 @@ const toolModuleRegistry: ToolModule[] = [
         },
     },
     {
-        sort: 20,
+        sort: 60,
         slug: 'exchange-rate',
         href: '/exchange-rate',
         badge: 'FX',
@@ -75,7 +75,7 @@ const toolModuleRegistry: ToolModule[] = [
         },
     },
     {
-        sort: 60,
+        sort: 20,
         slug: 'markdown',
         href: '/markdown',
         badge: 'MD',

@@ -164,7 +164,7 @@ export function Base64Tool() {
                         <Button onClick={() => void handleImageUrl()}>{t('base64.convertRemoteImage')}</Button>
                         <label className="inline-flex">
                             <input type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
-                            <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-title-md text-text-e transition hover:bg-fill-c">
+                            <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-body-md text-text-e transition hover:bg-fill-c">
                                 {t('base64.uploadLocalImage')}
                             </span>
                         </label>
