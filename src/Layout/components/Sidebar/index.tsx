@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import { cn } from '@/libs/utils';
 import { toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
@@ -12,13 +13,24 @@ import { useNavTransition } from '@/services/useNavTransition';
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const navRef = useRef<HTMLElement | null>(null);
     const { language } = useI18n();
     const { startTransition } = useNavTransition();
     const { confirmLeave } = useLeaveConfirm();
 
+    useEffect(() => {
+        void pathname;
+        const activeItem = navRef.current?.querySelector<HTMLElement>('[data-active="true"]');
+
+        activeItem?.scrollIntoView({
+            block: 'nearest',
+            behavior: 'smooth',
+        });
+    }, [pathname]);
+
     return (
         <aside className="sticky top-[4.5rem] h-[calc(100vh-5.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-neutral-j bg-[linear-gradient(180deg,var(--fill-a)_0%,rgba(198,236,211,0.58)_100%)] p-2 shadow-[0_24px_56px_rgba(0,54,22,0.08)] xl:rounded-3xl xl:p-4">
-            <nav className="space-y-3">
+            <nav ref={navRef} className="space-y-3">
                 {toolModules.map((tool, index) => {
                     const isActive = pathname.startsWith(tool.href);
 
@@ -26,6 +38,7 @@ export function Sidebar() {
                         <button
                             key={tool.slug}
                             type="button"
+                            data-active={isActive ? 'true' : 'false'}
                             aria-label={resolveLocalizedText(language, tool.title)}
                             title={resolveLocalizedText(language, tool.title)}
                             onClick={() => {
