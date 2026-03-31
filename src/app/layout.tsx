@@ -93,7 +93,7 @@ export default function RootLayout({
             </head>
             <body suppressHydrationWarning>
                 {/** 业务路由容器 */}
-                <section className="relative z-10 min-h-screen" id={DomIdEnum.AppContainer}>
+                <section className="relative z-10 h-screen overflow-hidden" id={DomIdEnum.AppContainer}>
                     <I18nProvider>
                         <ThemeProvider>
                             <Layout>{children}</Layout>

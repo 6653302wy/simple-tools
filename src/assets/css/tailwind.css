@@ -143,8 +143,8 @@
 
         /* 全局定义悬浮滚动条样式（细条、半透明，接近 Mac 效果） */
         &::-webkit-scrollbar {
-            width: 6px; /* 垂直滚动条宽度（细条，悬浮专用） */
-            height: 6px; /* 水平滚动条高度 */
+            width: 3px; /* 垂直滚动条宽度（细条，悬浮专用） */
+            height: 3px; /* 水平滚动条高度 */
             background: transparent; /* 轨道透明，不遮挡内容 */
         }
 

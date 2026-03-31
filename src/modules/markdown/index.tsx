@@ -1,18 +1,21 @@
 'use client';
 
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CopyButton } from '@/components/CopyButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
+import { cn } from '@/libs/utils';
 import { useI18n } from '@/services/i18n';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 
 const textareaClassName =
-    'mt-4 min-h-80 w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a lg:min-h-[26rem] lg:max-h-[calc(100vh-20rem)] lg:overflow-y-auto';
-const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
+    'mt-4 min-h-80 w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a lg:min-h-0 lg:flex-1 lg:resize-none lg:overflow-y-auto';
+const panelClassName =
+    'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)] lg:flex lg:min-h-0 lg:flex-col';
 const previewViewportClassName =
-    'mt-4 min-h-80 overflow-y-auto rounded-xl border border-neutral-j bg-fill-b p-4 lg:min-h-[26rem] lg:max-h-[calc(100vh-20rem)]';
+    'mt-4 min-h-80 overflow-y-auto rounded-xl border border-neutral-j bg-fill-b p-4 lg:min-h-0 lg:flex-1';
 
 const markdownComponents = {
     h1: ({ ...props }: React.ComponentProps<'h1'>) => <h1 className="text-headline-sm text-text-e" {...props} />,
@@ -73,7 +76,10 @@ export function MarkdownTool() {
     const { t } = useI18n();
     const localizedSample = t('markdown.sample');
     const previousSampleRef = useRef(localizedSample);
+    const resizeContainerRef = useRef<HTMLElement | null>(null);
+    const isResizingRef = useRef(false);
     const [markdown, setMarkdown] = useState(localizedSample);
+    const [editorWidth, setEditorWidth] = useState(50);
     const { setGuard } = useLeaveConfirm();
     const isDirty = markdown !== localizedSample;
 
@@ -101,11 +107,60 @@ export function MarkdownTool() {
         };
     }, [isDirty, setGuard, t]);
 
+    useEffect(() => {
+        function handlePointerMove(event: PointerEvent) {
+            if (!isResizingRef.current || !resizeContainerRef.current) {
+                return;
+            }
+
+            const rect = resizeContainerRef.current.getBoundingClientRect();
+            const nextWidth = ((event.clientX - rect.left) / rect.width) * 100;
+            const clampedWidth = Math.min(80, Math.max(20, nextWidth));
+
+            setEditorWidth(clampedWidth);
+        }
+
+        function stopResizing() {
+            isResizingRef.current = false;
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+        }
+
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', stopResizing);
+        window.addEventListener('pointercancel', stopResizing);
+
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', stopResizing);
+            window.removeEventListener('pointercancel', stopResizing);
+        };
+    }, []);
+
+    function startResizing(event: ReactPointerEvent<HTMLButtonElement>) {
+        if (window.innerWidth < 1280) {
+            return;
+        }
+
+        event.preventDefault();
+        isResizingRef.current = true;
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'col-resize';
+    }
+
+    const resizeStyle = {
+        '--markdown-editor-width': `${editorWidth}%`,
+    } as CSSProperties;
+
     return (
-        <section className="space-y-4">
+        <section className="flex h-full min-h-0 flex-col gap-4">
             <ModuleIntro badge="MD" title={t('markdown.introTitle')} description={t('markdown.introDescription')} />
 
-            <section className="grid gap-4 xl:grid-cols-2">
+            <section
+                ref={resizeContainerRef}
+                className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(20rem,var(--markdown-editor-width))_12px_minmax(20rem,1fr)] xl:gap-0"
+                style={resizeStyle}
+            >
                 <section className={panelClassName}>
                     <div className="flex items-start justify-between gap-4">
                         <div>
@@ -128,6 +183,19 @@ export function MarkdownTool() {
                         }}
                     />
                 </section>
+
+                <button
+                    type="button"
+                    aria-label="Resize markdown panels"
+                    onPointerDown={startResizing}
+                    className={cn(
+                        'hidden xl:flex xl:min-h-0 xl:items-center xl:justify-center',
+                        'group relative cursor-col-resize bg-transparent hover:bg-primary-100/40',
+                    )}
+                >
+                    <span className="pointer-events-none h-full w-[2px] rounded-full bg-neutral-j transition group-hover:bg-primary-300" />
+                    <span className="pointer-events-none absolute inset-y-1/2 h-10 w-2 -translate-y-1/2 rounded-full bg-primary-200/0 transition group-hover:bg-primary-200/80" />
+                </button>
 
                 <section className={panelClassName}>
                     <div>

@@ -184,9 +184,7 @@ export function QrCodeTool() {
                                 placeholder={t('qrcode.remoteImagePlaceholder')}
                             />
                             <div className="mt-3 flex flex-wrap gap-2">
-                                <Button  onClick={() => void handleUrlDecode()}>
-                                    {t('qrcode.decodeRemoteImage')}
-                                </Button>
+                                <Button onClick={() => void handleUrlDecode()}>{t('qrcode.decodeRemoteImage')}</Button>
                                 <label className="inline-flex">
                                     <input
                                         type="file"

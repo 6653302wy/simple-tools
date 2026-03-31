@@ -7,7 +7,9 @@ export type ToolModuleSlug =
     | 'base64'
     | 'json-tools'
     | 'markdown'
-    | 'network-speed';
+    | 'network-speed'
+    | 'http-test'
+    | 'websocket-test';
 
 export type ToolModule = {
     sort: number;
@@ -86,7 +88,7 @@ const toolModuleRegistry: ToolModule[] = [
         },
     },
     {
-        sort: 70,
+        sort: 90,
         slug: 'network-speed',
         href: '/network-speed',
         badge: 'NET',
@@ -94,6 +96,28 @@ const toolModuleRegistry: ToolModule[] = [
         description: {
             zh: '测试 IP、域名或 URL 的响应耗时、解析 IP 与采样下载速率。',
             en: 'Measure latency, resolved IP and sampled throughput for IPs, domains or URLs.',
+        },
+    },
+    {
+        sort: 70,
+        slug: 'http-test',
+        href: '/http-test',
+        badge: 'HTTP',
+        title: { zh: 'HTTP 测试', en: 'HTTP Tester' },
+        description: {
+            zh: '发起 HTTP 请求，查看状态码、响应头、响应体和耗时。',
+            en: 'Send HTTP requests and inspect status, headers, body and timing.',
+        },
+    },
+    {
+        sort: 80,
+        slug: 'websocket-test',
+        href: '/websocket-test',
+        badge: 'WS',
+        title: { zh: 'WebSocket 测试', en: 'WebSocket Tester' },
+        description: {
+            zh: '连接 WebSocket 服务，发送消息并查看双向通信日志。',
+            en: 'Connect to a WebSocket service, send messages and inspect bidirectional logs.',
         },
     },
 ];
