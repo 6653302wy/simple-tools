@@ -5,6 +5,7 @@ export type ToolModuleSlug =
     | 'exchange-rate'
     | 'qrcode'
     | 'image-watermark'
+    | 'image-crop'
     | 'base64'
     | 'json-tools'
     | 'markdown'
@@ -64,6 +65,17 @@ const toolModuleRegistry: ToolModule[] = [
         description: {
             zh: '上传图片并添加文字水印，实时预览后下载处理结果。',
             en: 'Upload an image, add a text watermark, preview it live, and download the result.',
+        },
+    },
+    {
+        sort: 37,
+        slug: 'image-crop',
+        href: '/image-crop',
+        badge: 'CROP',
+        title: { zh: '图片裁剪', en: 'Image Crop' },
+        description: {
+            zh: '上传图片后进行裁剪、旋转、缩放，并下载导出结果。',
+            en: 'Upload an image, crop it, rotate and zoom it, then download the result.',
         },
     },
     {

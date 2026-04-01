@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/Button';
+import { FileDropzone } from '@/components/FileDropzone';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { Select } from '@/components/Select';
 import { useI18n } from '@/services/i18n';
@@ -36,8 +36,9 @@ function clamp(value: number, min: number, max: number) {
 export function ImageWatermarkTool() {
     const { t } = useI18n();
     const objectUrlRef = useRef<string | null>(null);
+    const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const [sourceImage, setSourceImage] = useState<LoadedImage | null>(null);
-    const [resultImage, setResultImage] = useState('');
+    const [hasResult, setHasResult] = useState(false);
     const [error, setError] = useState('');
     const [watermarkText, setWatermarkText] = useState('SIMPLE TOOLS');
     const [color, setColor] = useState('#003616');
@@ -65,7 +66,7 @@ export function ImageWatermarkTool() {
 
     useEffect(() => {
         if (!sourceImage) {
-            setResultImage('');
+            setHasResult(false);
             return;
         }
 
@@ -89,8 +90,9 @@ export function ImageWatermarkTool() {
                 canvas.width = image.width;
                 canvas.height = image.height;
                 const context = canvas.getContext('2d');
+                const previewCanvas = previewCanvasRef.current;
 
-                if (!context) {
+                if (!context || !previewCanvas) {
                     throw new Error('canvas-unavailable');
                 }
 
@@ -128,12 +130,22 @@ export function ImageWatermarkTool() {
                     context.restore();
                 }
 
-                setResultImage(canvas.toDataURL('image/png'));
+                previewCanvas.width = canvas.width;
+                previewCanvas.height = canvas.height;
+                const previewContext = previewCanvas.getContext('2d');
+
+                if (!previewContext) {
+                    throw new Error('preview-context-unavailable');
+                }
+
+                previewContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                previewContext.drawImage(canvas, 0, 0);
+                setHasResult(true);
                 setError('');
             } catch {
                 if (!cancelled) {
                     setError(t('imageWatermark.renderFailed'));
-                    setResultImage('');
+                    setHasResult(false);
                 }
             }
         }
@@ -145,8 +157,8 @@ export function ImageWatermarkTool() {
         };
     }, [color, fontSize, gap, mode, opacity, rotation, sourceImage, t, watermarkText]);
 
-    async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-        const file = event.target.files?.[0];
+    async function handleFilesSelect(files: FileList) {
+        const file = files[0];
 
         if (!file) {
             return;
@@ -154,7 +166,6 @@ export function ImageWatermarkTool() {
 
         if (!file.type.startsWith('image/')) {
             setError(t('imageWatermark.invalidImage'));
-            event.target.value = '';
             return;
         }
 
@@ -177,14 +188,15 @@ export function ImageWatermarkTool() {
         } catch {
             setError(t('imageWatermark.invalidImage'));
             setSourceImage(null);
-            setResultImage('');
+            setHasResult(false);
         } finally {
-            event.target.value = '';
         }
     }
 
     function handleDownload() {
-        if (!resultImage || !sourceImage) {
+        const previewCanvas = previewCanvasRef.current;
+
+        if (!previewCanvas || !sourceImage || !hasResult) {
             return;
         }
 
@@ -192,7 +204,7 @@ export function ImageWatermarkTool() {
         const dotIndex = sourceImage.name.lastIndexOf('.');
         const fileName = dotIndex > 0 ? sourceImage.name.slice(0, dotIndex) : sourceImage.name;
 
-        link.href = resultImage;
+        link.href = previewCanvas.toDataURL('image/png');
         link.download = `${fileName}-watermarked.png`;
         link.click();
     }
@@ -213,30 +225,11 @@ export function ImageWatermarkTool() {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                        <label className="inline-flex">
-                            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                            <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-body-md text-text-e transition hover:bg-fill-c">
-                                {sourceImage ? t('imageWatermark.replaceImage') : t('imageWatermark.uploadImage')}
-                            </span>
-                        </label>
-                    </div>
-
-                    <div>
-                        <p className="text-body-sm text-text-c">{t('imageWatermark.originalPreview')}</p>
-                        <div className="mt-2 flex min-h-64 items-center justify-center rounded-2xl border border-dashed border-primary-200 bg-fill-b p-4">
-                            {sourceImage ? (
-                                <Image
-                                    src={sourceImage.src}
-                                    alt={sourceImage.name}
-                                    width={sourceImage.width}
-                                    height={sourceImage.height}
-                                    unoptimized
-                                    className="max-h-[24rem] w-full rounded-xl object-contain"
-                                />
-                            ) : (
-                                <p className="text-body-pc-md text-text-c">{t('imageWatermark.waitingImage')}</p>
-                            )}
-                        </div>
+                        <FileDropzone
+                            accept="image/*"
+                            label={sourceImage ? t('imageWatermark.replaceImage') : t('imageWatermark.uploadImage')}
+                            onFilesSelect={handleFilesSelect}
+                        />
                     </div>
 
                     <div className="rounded-2xl border border-neutral-j bg-fill-b p-4">
@@ -379,7 +372,7 @@ export function ImageWatermarkTool() {
                             <p className="mt-1 text-body-pc-md text-text-d">{t('imageWatermark.resultDescription')}</p>
                         </div>
 
-                        <Button disabled={!resultImage} onClick={handleDownload}>
+                        <Button disabled={!hasResult} onClick={handleDownload}>
                             {t('imageWatermark.download')}
                         </Button>
                     </div>
@@ -389,17 +382,20 @@ export function ImageWatermarkTool() {
                         <div className="mt-2 flex min-h-80 items-center justify-center rounded-2xl border border-dashed border-primary-200 bg-fill-b p-4">
                             {error ? (
                                 <p className="text-body-pc-md text-error">{error}</p>
-                            ) : resultImage ? (
-                                <Image
-                                    src={resultImage}
-                                    alt="watermark preview"
-                                    width={sourceImage?.width ?? 1200}
-                                    height={sourceImage?.height ?? 900}
-                                    unoptimized
-                                    className="max-h-[34rem] w-full rounded-xl object-contain"
-                                />
                             ) : (
-                                <p className="text-body-pc-md text-text-c">{t('imageWatermark.waitingImage')}</p>
+                                <>
+                                    <canvas
+                                        ref={previewCanvasRef}
+                                        className={
+                                            hasResult ? 'max-h-[34rem] w-full rounded-xl object-contain' : 'hidden'
+                                        }
+                                    />
+                                    {!hasResult && (
+                                        <p className="text-body-pc-md text-text-c">
+                                            {t('imageWatermark.waitingImage')}
+                                        </p>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

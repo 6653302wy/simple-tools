@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import QRCode from 'qrcode';
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
+import { FileDropzone } from '@/components/FileDropzone';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { decodeQrCodeFromImage, fetchRemoteImageBlob } from '@/modules/shared/media';
 import { useI18n } from '@/services/i18n';
@@ -83,8 +84,8 @@ export function QrCodeTool() {
         }
     }
 
-    async function handleFileDecode(event: ChangeEvent<HTMLInputElement>) {
-        const file = event.target.files?.[0];
+    async function handleDecodeFiles(files: FileList) {
+        const file = files[0];
 
         if (!file) {
             return;
@@ -93,7 +94,6 @@ export function QrCodeTool() {
         const previewUrl = URL.createObjectURL(file);
 
         await handleDecodeFromSource(file, t('qrcode.localFileSource', { name: file.name }), previewUrl);
-        event.target.value = '';
     }
 
     async function handleUrlDecode() {
@@ -185,17 +185,11 @@ export function QrCodeTool() {
                             />
                             <div className="mt-3 flex flex-wrap gap-2">
                                 <Button onClick={() => void handleUrlDecode()}>{t('qrcode.decodeRemoteImage')}</Button>
-                                <label className="inline-flex">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={handleFileDecode}
-                                    />
-                                    <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-body-md text-text-e transition hover:bg-fill-c">
-                                        {t('qrcode.uploadLocalImage')}
-                                    </span>
-                                </label>
+                                <FileDropzone
+                                    accept="image/*"
+                                    label={t('qrcode.uploadLocalImage')}
+                                    onFilesSelect={handleDecodeFiles}
+                                />
                             </div>
                         </div>
 

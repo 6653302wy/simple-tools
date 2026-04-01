@@ -1,9 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { type ChangeEvent, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/Button';
 import { CopyButton } from '@/components/CopyButton';
+import { FileDropzone } from '@/components/FileDropzone';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { decodeBase64ToText, encodeTextToBase64 } from '@/modules/shared/base64';
 import { blobToDataUrl, fetchRemoteImageBlob } from '@/modules/shared/media';
@@ -45,8 +46,8 @@ export function Base64Tool() {
         }
     }
 
-    async function handleImageFile(event: ChangeEvent<HTMLInputElement>) {
-        const file = event.target.files?.[0];
+    async function handleImageFiles(files: FileList) {
+        const file = files[0];
 
         if (!file) {
             return;
@@ -61,8 +62,6 @@ export function Base64Tool() {
             setImageSourceLabel(t('base64.localFileSource', { name: file.name }));
         } catch {
             setImageError(t('base64.localImageFailed'));
-        } finally {
-            event.target.value = '';
         }
     }
 
@@ -162,12 +161,11 @@ export function Base64Tool() {
 
                     <div className="mt-3 flex flex-wrap gap-2">
                         <Button onClick={() => void handleImageUrl()}>{t('base64.convertRemoteImage')}</Button>
-                        <label className="inline-flex">
-                            <input type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
-                            <span className="inline-flex cursor-pointer items-center justify-center rounded-full bg-fill-b px-4 py-[9.5px] text-body-md text-text-e transition hover:bg-fill-c">
-                                {t('base64.uploadLocalImage')}
-                            </span>
-                        </label>
+                        <FileDropzone
+                            accept="image/*"
+                            label={t('base64.uploadLocalImage')}
+                            onFilesSelect={handleImageFiles}
+                        />
                     </div>
 
                     {(imagePreview || imageSourceLabel) && (

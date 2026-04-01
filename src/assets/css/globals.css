@@ -1,4 +1,5 @@
 @import "./theme.css";
+@import "cropperjs/dist/cropper.css";
 
 :root {
     color-scheme: light;
