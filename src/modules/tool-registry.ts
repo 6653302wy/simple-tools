@@ -4,6 +4,7 @@ export type ToolModuleSlug =
     | 'timestamp'
     | 'exchange-rate'
     | 'qrcode'
+    | 'image-watermark'
     | 'base64'
     | 'json-tools'
     | 'markdown'
@@ -52,6 +53,17 @@ const toolModuleRegistry: ToolModule[] = [
         description: {
             zh: '生成二维码图片，或从本地/网络图片中反解析二维码内容。',
             en: 'Generate QR codes or decode them from local and remote images.',
+        },
+    },
+    {
+        sort: 35,
+        slug: 'image-watermark',
+        href: '/image-watermark',
+        badge: 'WM',
+        title: { zh: '图片加水印', en: 'Image Watermark' },
+        description: {
+            zh: '上传图片并添加文字水印，实时预览后下载处理结果。',
+            en: 'Upload an image, add a text watermark, preview it live, and download the result.',
         },
     },
     {
