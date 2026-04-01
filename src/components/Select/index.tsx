@@ -81,7 +81,7 @@ export function Select({
                     position="popper"
                     sideOffset={8}
                     className={cn(
-                        'z-50 max-h-72 min-w-[8rem] overflow-hidden rounded-xl border border-neutral-j bg-fill-a p-1 shadow-[0_18px_40px_rgba(0,54,22,0.12)]',
+                        'z-50 max-h-72 min-w-[10rem] overflow-hidden rounded-xl border border-neutral-j bg-fill-a p-1 shadow-[0_18px_40px_rgba(0,54,22,0.12)]',
                         'w-[var(--radix-select-trigger-width)]',
                         contentClassName,
                     )}

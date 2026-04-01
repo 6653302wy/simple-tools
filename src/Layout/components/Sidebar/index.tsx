@@ -59,8 +59,8 @@ export function Sidebar() {
                             className={cn(
                                 'group flex w-full items-center justify-center rounded-xl border p-2.5 text-left transition duration-200 xl:items-start xl:justify-start xl:gap-3 xl:p-4',
                                 isActive
-                                    ? 'border-primary-400 bg-primary-300 text-neutral-h shadow-[0_10px_16px_rgba(15,23,42,0.16)]'
-                                    : 'border-transparent bg-fill-a hover:border-primary-200 hover:bg-primary-100/60 shadow-[0_5px_10px_rgba(15,23,42,0.1)]',
+                                    ? 'border-primary-400 bg-primary-300 text-neutral-h shadow-[0_5px_8px_rgba(15,23,42,0.16)]'
+                                    : 'border-transparent bg-fill-a hover:border-primary-200 hover:bg-primary-100/60 shadow-[0_4px_8px_rgba(15,23,42,0.1)]',
                             )}
                         >
                             <div

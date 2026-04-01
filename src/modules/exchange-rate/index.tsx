@@ -187,21 +187,18 @@ export function ExchangeRateConverter() {
                             />
                         </div>
 
-                        <div>
-                            <div className="hidden md:block md:h-[26px]" aria-hidden="true" />
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setFromCurrency(toCurrency);
-                                    setToCurrency(fromCurrency);
-                                }}
-                                className="mt-1 inline-flex h-11 w-11 items-center justify-center rounded-full border border-primary-200 bg-primary-100 text-title-md text-primary-600 transition hover:bg-primary-200"
-                                aria-label={t('exchangeRate.swap')}
-                                title={t('exchangeRate.swap')}
-                            >
-                                ↔
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setFromCurrency(toCurrency);
+                                setToCurrency(fromCurrency);
+                            }}
+                            className="mt-7  inline-flex h-11  w-11 items-center justify-center rounded-full border border-primary-200 bg-primary-100 text-title-lg text-primary-600 transition hover:bg-primary-200"
+                            aria-label={t('exchangeRate.swap')}
+                            title={t('exchangeRate.swap')}
+                        >
+                            ⇄
+                        </button>
 
                         <div>
                             <label className="text-body-sm text-text-c" htmlFor="to-currency">
