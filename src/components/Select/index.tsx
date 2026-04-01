@@ -26,7 +26,7 @@ interface SelectProps {
 }
 
 const triggerVariants = cva(
-    'inline-flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-neutral-j bg-fill-b px-3 text-body-pc-md text-text-e outline-none transition',
+    'inline-flex h-11 w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-neutral-j bg-fill-b px-3 text-body-sm text-text-e outline-none transition',
     {
         variants: {
             variant: {
@@ -67,7 +67,10 @@ export function Select({
             onValueChange={onValueChange}
         >
             <RadixSelect.Trigger id={id} className={cn(triggerVariants(), className)} aria-label={resolvedPlaceholder}>
-                <RadixSelect.Value placeholder={resolvedPlaceholder} />
+                <RadixSelect.Value
+                    className="min-w-0 flex-1 truncate text-left text-body-sm whitespace-nowrap"
+                    placeholder={resolvedPlaceholder}
+                />
                 <RadixSelect.Icon asChild>
                     <ArrowDown className="shrink-0 text-body-sm text-text-c" />
                 </RadixSelect.Icon>
@@ -90,7 +93,7 @@ export function Select({
                                 value={option.value}
                                 disabled={option.disabled}
                                 className={cn(
-                                    'relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-9 pr-3 text-body-pc-md text-text-e outline-none transition',
+                                    'relative flex w-full min-w-0 cursor-default select-none items-center rounded-lg py-2 pl-9 pr-3 text-body-sm text-text-e outline-none transition',
                                     'data-[highlighted]:bg-primary-100 data-[highlighted]:text-primary-700',
                                     'data-[state=checked]:bg-primary-100/70 data-[state=checked]:text-primary-700',
                                     'data-[disabled]:pointer-events-none data-[disabled]:text-text-c',
@@ -99,7 +102,9 @@ export function Select({
                                 <span className="absolute left-3 inline-flex items-center justify-center text-body-sm text-primary-500">
                                     <RadixSelect.ItemIndicator>✓</RadixSelect.ItemIndicator>
                                 </span>
-                                <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
+                                <RadixSelect.ItemText className="block truncate text-body-sm whitespace-nowrap">
+                                    {option.label}
+                                </RadixSelect.ItemText>
                             </RadixSelect.Item>
                         ))}
                     </RadixSelect.Viewport>
