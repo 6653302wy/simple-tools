@@ -1,6 +1,7 @@
 'use client';
 
 import type { FC, PropsWithChildren } from 'react';
+import { ViewportBoundScroll } from '@/components/ViewportBoundScroll';
 import { LeaveConfirmProvider } from '@/services/useLeaveConfirm';
 import { TransitionProvider } from '@/services/useNavTransition';
 import { Header } from './components/Header';
@@ -18,14 +19,17 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
                     <Header />
                     <TopProgressBar />
                     <section className="mx-auto flex min-h-0 w-full max-w-screen-2xl flex-1 px-4 py-4 sm:px-6 lg:px-8">
-                        <section className="grid min-h-0 w-full grid-cols-[auto_minmax(0,1fr)] gap-4 xl:grid-cols-4">
+                        <section className="grid min-h-0 w-full items-start grid-cols-[auto_minmax(0,1fr)] gap-4 xl:grid-cols-4">
                             <div className="w-fit self-start xl:w-auto">
                                 <Sidebar />
                             </div>
 
-                            <section className="min-h-0 min-w-0 overflow-y-auto overscroll-contain rounded-3xl border border-neutral-j bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(246,246,247,0.92)_100%)] p-4 shadow-[0_28px_70px_rgba(0,54,22,0.08)] sm:p-5 lg:p-6 xl:col-span-3">
+                            <ViewportBoundScroll
+                                className="min-w-0 overflow-hidden rounded-3xl border border-neutral-j bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(246,246,247,0.92)_100%)] shadow-[0_28px_70px_rgba(0,54,22,0.08)] xl:col-span-3"
+                                contentClassName="min-w-0 p-4 sm:p-5 lg:p-6"
+                            >
                                 {children}
-                            </section>
+                            </ViewportBoundScroll>
                         </section>
                     </section>
                 </section>

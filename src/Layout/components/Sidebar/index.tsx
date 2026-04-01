@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { ViewportBoundScroll } from '@/components/ViewportBoundScroll';
 import { cn } from '@/libs/utils';
 import { toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
@@ -29,7 +30,10 @@ export function Sidebar() {
     }, [pathname]);
 
     return (
-        <aside className="sticky top-[4.5rem] h-[calc(100vh-5.5rem)] overflow-y-auto overscroll-contain rounded-2xl border border-neutral-j bg-[linear-gradient(180deg,var(--fill-a)_0%,rgba(198,236,211,0.58)_100%)] p-2 shadow-[0_24px_56px_rgba(0,54,22,0.08)] xl:rounded-3xl xl:p-4">
+        <ViewportBoundScroll
+            className="sticky top-[4.5rem] overflow-hidden rounded-2xl border border-neutral-j shadow-[0_24px_56px_rgba(0,54,22,0.08)] xl:rounded-3xl"
+            contentClassName="p-2 xl:p-4"
+        >
             <nav ref={navRef} className="space-y-3">
                 {toolModules.map((tool, index) => {
                     const isActive = pathname.startsWith(tool.href);
@@ -55,8 +59,8 @@ export function Sidebar() {
                             className={cn(
                                 'group flex w-full items-center justify-center rounded-xl border p-2.5 text-left transition duration-200 xl:items-start xl:justify-start xl:gap-3 xl:p-4',
                                 isActive
-                                    ? 'border-primary-400 bg-primary-300 text-neutral-h shadow-[0_18px_32px_rgba(0,155,57,0.22)]'
-                                    : 'border-transparent bg-fill-a hover:border-primary-200 hover:bg-primary-100/60 shadow-[0_10px_20px_rgba(0,155,57,0.22)]',
+                                    ? 'border-primary-400 bg-primary-300 text-neutral-h shadow-[0_10px_16px_rgba(15,23,42,0.16)]'
+                                    : 'border-transparent bg-fill-a hover:border-primary-200 hover:bg-primary-100/60 shadow-[0_5px_10px_rgba(15,23,42,0.1)]',
                             )}
                         >
                             <div
@@ -95,6 +99,6 @@ export function Sidebar() {
                     );
                 })}
             </nav>
-        </aside>
+        </ViewportBoundScroll>
     );
 }
