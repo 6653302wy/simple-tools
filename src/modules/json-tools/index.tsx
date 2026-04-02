@@ -8,7 +8,7 @@ import { useI18n } from '@/services/i18n';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 
 const textareaClassName =
-    'mt-2 min-h-72 w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
+    'mt-2 min-h-0 w-full flex-1 rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 
 const sampleJson = `{
@@ -85,17 +85,14 @@ export function JsonTools() {
     }
 
     return (
-        <section className="space-y-4">
+        <section className="flex h-full min-h-0 flex-col gap-4">
             <ModuleIntro badge="JSON" title={t('json.introTitle')} description={t('json.introDescription')} />
 
-            <section className={panelClassName}>
+            <section className={`${panelClassName} flex min-h-0 flex-1 flex-col`}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <p className="text-title-lg text-text-e">{t('json.panelTitle')}</p>
                         <p className="mt-1 text-body-pc-md text-text-d">{t('json.panelDescription')}</p>
-                    </div>
-                    <div className="rounded-full border border-primary-200 bg-primary-100 px-4 py-2 text-body-sm text-primary-700">
-                        {status}
                     </div>
                 </div>
 
@@ -111,8 +108,8 @@ export function JsonTools() {
                     </Button>
                 </div>
 
-                <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                    <div>
+                <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 xl:flex-row">
+                    <div className="flex min-h-0 flex-col xl:flex-1">
                         <label className="text-body-sm text-text-c" htmlFor="json-source">
                             {t('json.inputJson')}
                         </label>
@@ -127,11 +124,17 @@ export function JsonTools() {
                         />
                     </div>
 
-                    <div>
+                    <div className="flex min-h-0 flex-col xl:flex-1">
                         <div className="flex items-center justify-between gap-3">
-                            <label className="text-body-sm text-text-c" htmlFor="json-result">
-                                {t('json.resultTitle')}
-                            </label>
+                            <div className="flex items-center gap-4">
+                                <label className="text-body-sm text-text-c" htmlFor="json-result">
+                                    {t('json.resultTitle')}
+                                </label>
+                                <div className="rounded-full  bg-primary-100 px-4 py-2 text-body-sm text-primary-700">
+                                    {status}
+                                </div>
+                            </div>
+
                             <CopyButton
                                 text={result}
                                 className="px-3 py-2 text-body-sm"

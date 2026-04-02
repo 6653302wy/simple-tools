@@ -9,7 +9,7 @@ import { useI18n } from '@/services/i18n';
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const compactTextareaClassName =
-    'mt-2 min-h-[5.5rem] w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
+    'mt-2 min-h-0 w-full flex-1 rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 
 type SocketStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error';
@@ -195,7 +195,7 @@ export function WebSocketTestTool() {
             <ModuleIntro badge="WS" title={t('websocket.introTitle')} description={t('websocket.introDescription')} />
 
             <section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-                <section className={`${panelClassName} min-h-0`}>
+                <section className={`${panelClassName} flex min-h-0 flex-col`}>
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <p className="text-title-lg text-text-e">{t('websocket.connectionTitle')}</p>
@@ -261,7 +261,7 @@ export function WebSocketTestTool() {
                         </p>
                     )}
 
-                    <div className="mt-6">
+                    <div className="mt-6 flex min-h-0 flex-1 flex-col">
                         <p className="text-title-lg text-text-e">{t('websocket.messageTitle')}</p>
                         <p className="mt-1 text-body-pc-md text-text-d">{t('websocket.messageDescription')}</p>
 

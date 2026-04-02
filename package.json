@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "class-variance-authority": "^0.7.1",
+        "cropperjs": "^1.6.2",
         "dayjs": "^1.11.20",
         "i18next": "^25.10.10",
         "jsqr": "^1.4.0",

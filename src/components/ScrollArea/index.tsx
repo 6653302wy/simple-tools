@@ -18,9 +18,11 @@ export function ScrollArea({
     contentClassName,
 }: PropsWithChildren<ScrollAreaProps>) {
     return (
-        <RadixScrollArea.Root className={cn('relative overflow-hidden', className)}>
-            <RadixScrollArea.Viewport className={cn('h-full w-full rounded-[inherit]', viewportClassName)}>
-                <div className={contentClassName}>{children}</div>
+        <RadixScrollArea.Root className={cn('relative h-full overflow-hidden', className)}>
+            <RadixScrollArea.Viewport
+                className={cn('scroll-area-viewport h-full w-full rounded-[inherit]', viewportClassName)}
+            >
+                <div className={cn('h-full min-h-full', contentClassName)}>{children}</div>
             </RadixScrollArea.Viewport>
 
             <RadixScrollArea.Scrollbar
@@ -36,7 +38,6 @@ export function ScrollArea({
             >
                 <RadixScrollArea.Thumb className="relative flex-1 rounded-full bg-[rgba(125,145,128,0.42)] hover:bg-[rgba(125,145,128,0.62)]" />
             </RadixScrollArea.Scrollbar>
-
             <RadixScrollArea.Corner className="bg-transparent" />
         </RadixScrollArea.Root>
     );

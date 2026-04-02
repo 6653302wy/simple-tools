@@ -565,7 +565,7 @@ console.log(tool);
             compress: 'Compress',
             inputJson: 'JSON Input',
             inputPlaceholder: 'Enter the JSON string to validate',
-            resultTitle: 'Result',
+            resultTitle: 'Result:',
             resultPlaceholder: 'The formatted or compressed JSON will appear here',
         },
         markdown: {

@@ -12,13 +12,10 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                primary: `text-neutral-h bg-[linear-gradient(123deg,_#55B838_12.9%,_#009B39_81.32%)]
-                        border border-[#9FD236]
+                primary: `text-neutral-h bg-primary-400
                         hover:bg-[linear-gradient(116deg,_#76C560_13.49%,_#34AF61_85.18%)]
-                        hover:border-auxiliary-green
-                        active:border-[#7FA82B]
-                        active:bg-[linear-gradient(123deg,_#42922E_12.9%,_#027C2E_81.32%)] 
-                        disabled:bg-[linear-gradient(123deg,_#A8DB9B_12.9%,_#80CD9C_81.32%)]
+                        active:bg-bg-primary-500
+                        disabled:bg-primary-200
                         disabled:border-none
                         `,
                 secondary: `bg-fill-b text-text-e

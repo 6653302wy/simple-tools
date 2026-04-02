@@ -12,11 +12,11 @@ import { useI18n } from '@/services/i18n';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 
 const textareaClassName =
-    'mt-4 h-80 w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition [scrollbar-gutter:stable] focus:border-primary-400 focus:bg-fill-a lg:h-[34rem] lg:resize-none lg:overflow-y-auto';
+    'mt-4 min-h-0 w-full flex-1 rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition [scrollbar-gutter:stable] focus:border-primary-400 focus:bg-fill-a lg:resize-none lg:overflow-y-auto';
 const panelClassName =
     'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)] lg:flex lg:min-h-0 lg:flex-col';
 const previewViewportClassName =
-    'mt-4 h-80 overflow-y-auto rounded-xl border border-neutral-j bg-fill-b p-4 [scrollbar-gutter:stable] lg:h-[34rem]';
+    'mt-4 min-h-0 flex-1 overflow-y-auto rounded-xl border border-neutral-j bg-fill-b p-4 [scrollbar-gutter:stable]';
 
 const markdownComponents = {
     h1: ({ ...props }: React.ComponentProps<'h1'>) => <h1 className="text-headline-sm text-text-e" {...props} />,

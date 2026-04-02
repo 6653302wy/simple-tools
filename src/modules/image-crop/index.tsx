@@ -286,17 +286,17 @@ export function ImageCropTool() {
     }
 
     return (
-        <section className="space-y-4">
+        <section className="flex h-full min-h-0 flex-col gap-4">
             <ModuleIntro badge="CROP" title={t('imageCrop.introTitle')} description={t('imageCrop.introDescription')} />
 
-            <section className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-                <section className={`${panelClassName} space-y-4`}>
+            <section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+                <section className={`${panelClassName} flex min-h-0 flex-col`}>
                     <div>
                         <p className="text-title-lg text-text-e">{t('imageCrop.uploadTitle')}</p>
                         <p className="mt-1 text-body-pc-md text-text-d">{t('imageCrop.uploadDescription')}</p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 my-4">
                         <FileDropzone
                             accept="image/*"
                             label={sourceImage ? t('imageCrop.replaceImage') : t('imageCrop.uploadImage')}
@@ -307,7 +307,7 @@ export function ImageCropTool() {
                         </Button>
                     </div>
 
-                    <div className="rounded-2xl border border-neutral-j bg-fill-b p-4">
+                    <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-neutral-j bg-fill-b p-4">
                         <div>
                             <p className="text-title-lg text-text-e">{t('imageCrop.cropTitle')}</p>
                             <p className="mt-1 text-body-pc-md text-text-d">{t('imageCrop.cropDescription')}</p>
@@ -359,9 +359,9 @@ export function ImageCropTool() {
                             </div>
                         </div>
 
-                        <div className="mt-3 overflow-hidden rounded-2xl border border-neutral-j bg-fill-a">
+                        <div className="mt-3 min-h-0 flex-1 overflow-hidden rounded-2xl border border-neutral-j bg-fill-a">
                             {sourceImage ? (
-                                <div ref={cropStageRef} className="h-[22rem] w-full" onWheel={handleCropperWheel}>
+                                <div ref={cropStageRef} className="h-full w-full" onWheel={handleCropperWheel}>
                                     <Cropper
                                         key={sourceImage.src}
                                         ref={cropperRef}
@@ -402,7 +402,7 @@ export function ImageCropTool() {
                                     />
                                 </div>
                             ) : (
-                                <div className="flex h-[22rem] items-center justify-center px-4 text-center text-body-pc-md text-text-c">
+                                <div className="flex h-full min-h-[18rem] items-center justify-center px-4 text-center text-body-pc-md text-text-c">
                                     {t('imageCrop.waitingImage')}
                                 </div>
                             )}
@@ -410,7 +410,7 @@ export function ImageCropTool() {
                     </div>
                 </section>
 
-                <section className={`${panelClassName} space-y-4`}>
+                <section className={`${panelClassName} flex min-h-0 flex-col`}>
                     <div className="flex items-start justify-between gap-3">
                         <div>
                             <p className="text-title-lg text-text-e">{t('imageCrop.resultTitle')}</p>
@@ -422,18 +422,16 @@ export function ImageCropTool() {
                         </Button>
                     </div>
 
-                    <div>
+                    <div className="flex min-h-0 flex-1 flex-col">
                         <p className="text-body-sm text-text-c">{t('imageCrop.resultPreview')}</p>
-                        <div className="mt-2 flex min-h-[28rem] items-center justify-center rounded-2xl border border-dashed border-primary-200 bg-fill-b p-4">
+                        <div className="mt-2 flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-dashed border-primary-200 bg-fill-b p-4">
                             {error ? (
                                 <p className="text-body-pc-md text-error">{error}</p>
                             ) : (
                                 <>
                                     <canvas
                                         ref={previewCanvasRef}
-                                        className={
-                                            hasResult ? 'max-h-[36rem] w-full rounded-xl object-contain' : 'hidden'
-                                        }
+                                        className={hasResult ? 'max-h-full w-full rounded-xl object-contain' : 'hidden'}
                                     />
                                     {!hasResult && (
                                         <p className="text-body-pc-md text-text-c">{t('imageCrop.waitingImage')}</p>

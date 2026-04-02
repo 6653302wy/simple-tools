@@ -45,6 +45,11 @@ body {
     background: rgba(125, 145, 128, 0.7);
 }
 
+.scroll-area-viewport > div {
+    height: 100%;
+    min-height: 100%;
+}
+
 button {
     cursor: pointer;
 }

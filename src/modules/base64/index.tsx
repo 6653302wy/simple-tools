@@ -13,7 +13,7 @@ import { useI18n } from '@/services/i18n';
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const textareaClassName =
-    'mt-2 min-h-36 w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
+    'mt-2 min-h-0 w-full flex-1 rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 
 export function Base64Tool() {
@@ -85,17 +85,17 @@ export function Base64Tool() {
     }
 
     return (
-        <section className="space-y-4">
+        <section className="flex h-full min-h-0 flex-col gap-4">
             <ModuleIntro badge="B64" title={t('base64.introTitle')} description={t('base64.introDescription')} />
 
-            <section className="grid gap-4 xl:grid-cols-2">
-                <section className={panelClassName}>
+            <section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-2">
+                <section className={`${panelClassName} flex min-h-0 flex-col`}>
                     <div>
                         <p className="text-title-lg text-text-e">{t('base64.textTitle')}</p>
                         <p className="mt-1 text-body-pc-md text-text-d">{t('base64.textDescription')}</p>
                     </div>
 
-                    <div className="mt-4">
+                    <div className="mt-4 flex min-h-0 flex-1 flex-col">
                         <label className="text-body-sm text-text-c" htmlFor="base64-text-input">
                             {t('base64.inputContent')}
                         </label>
@@ -117,7 +117,7 @@ export function Base64Tool() {
                         </Button>
                     </div>
 
-                    <div className="mt-4">
+                    <div className="mt-4 flex min-h-0 flex-1 flex-col">
                         <div className="flex items-center justify-between gap-3">
                             <label className="text-body-sm text-text-c" htmlFor="base64-text-output">
                                 {t('base64.outputResult')}
@@ -138,7 +138,7 @@ export function Base64Tool() {
                     </div>
                 </section>
 
-                <section className={panelClassName}>
+                <section className={`${panelClassName} flex min-h-0 flex-col`}>
                     <div>
                         <p className="text-title-lg text-text-e">{t('base64.imageTitle')}</p>
                         <p className="mt-1 text-body-pc-md text-text-d">{t('base64.imageDescription')}</p>
@@ -187,7 +187,7 @@ export function Base64Tool() {
                         </div>
                     )}
 
-                    <div className="mt-4">
+                    <div className="mt-4 flex min-h-0 flex-1 flex-col">
                         <div className="flex items-center justify-between gap-3">
                             <label className="text-body-sm text-text-c" htmlFor="image-base64-output">
                                 {t('base64.base64Output')}

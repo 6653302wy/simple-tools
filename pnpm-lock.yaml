@@ -11,6 +11,9 @@ importers:
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
+      cropperjs:
+        specifier: ^1.6.2
+        version: 1.6.2
       dayjs:
         specifier: ^1.11.20
         version: 1.11.20
