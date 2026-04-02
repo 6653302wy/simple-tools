@@ -4,6 +4,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Button } from '@/components/Button';
 import { CopyButton } from '@/components/CopyButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { cn } from '@/libs/utils';
@@ -11,11 +12,11 @@ import { useI18n } from '@/services/i18n';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 
 const textareaClassName =
-    'mt-4 min-h-80 w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a lg:min-h-0 lg:flex-1 lg:resize-none lg:overflow-y-auto';
+    'mt-4 h-80 w-full rounded-xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition [scrollbar-gutter:stable] focus:border-primary-400 focus:bg-fill-a lg:h-[34rem] lg:resize-none lg:overflow-y-auto';
 const panelClassName =
     'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)] lg:flex lg:min-h-0 lg:flex-col';
 const previewViewportClassName =
-    'mt-4 min-h-80 overflow-y-auto rounded-xl border border-neutral-j bg-fill-b p-4 lg:min-h-0 lg:flex-1';
+    'mt-4 h-80 overflow-y-auto rounded-xl border border-neutral-j bg-fill-b p-4 [scrollbar-gutter:stable] lg:h-[34rem]';
 
 const markdownComponents = {
     h1: ({ ...props }: React.ComponentProps<'h1'>) => <h1 className="text-headline-sm text-text-e" {...props} />,
@@ -168,11 +169,23 @@ export function MarkdownTool() {
                             <p className="mt-1 text-body-pc-md text-text-d">{t('markdown.editorDescription')}</p>
                         </div>
 
-                        <CopyButton
-                            text={markdown}
-                            className="px-3 py-2 text-body-sm"
-                            idleLabel={t('markdown.copyMarkdown')}
-                        />
+                        <div className="flex items-center gap-2">
+                            <CopyButton
+                                text={markdown}
+                                className="px-3 py-2 text-body-sm"
+                                idleLabel={t('markdown.copyMarkdown')}
+                            />
+                            <Button
+                                variant="secondary"
+                                className="px-3 py-2 text-body-sm"
+                                disabled={!markdown}
+                                onClick={() => {
+                                    setMarkdown('');
+                                }}
+                            >
+                                {t('common.clear')}
+                            </Button>
+                        </div>
                     </div>
 
                     <textarea

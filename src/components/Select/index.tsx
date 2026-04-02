@@ -94,9 +94,9 @@ export function Select({
                                 disabled={option.disabled}
                                 className={cn(
                                     'relative flex w-full min-w-0 cursor-default select-none items-center rounded-lg py-2 pl-9 pr-3 text-body-sm text-text-e outline-none transition',
-                                    'data-[highlighted]:bg-primary-100 data-[highlighted]:text-primary-700',
-                                    'data-[state=checked]:bg-primary-100/70 data-[state=checked]:text-primary-700',
-                                    'data-[disabled]:pointer-events-none data-[disabled]:text-text-c',
+                                    'data-highlighted:bg-primary-100 data-highlighted:text-primary-700',
+                                    'data-state-checked:bg-primary-100/70 data-state-checked:text-primary-700',
+                                    'data-disabled:pointer-events-none data-disabled:text-text-c',
                                 )}
                             >
                                 <span className="absolute left-3 inline-flex items-center justify-center text-body-sm text-primary-500">
