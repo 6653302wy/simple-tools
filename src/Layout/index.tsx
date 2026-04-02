@@ -1,7 +1,7 @@
 'use client';
 
 import type { FC, PropsWithChildren } from 'react';
-import { ViewportBoundScroll } from '@/components/ViewportBoundScroll';
+import { ScrollArea } from '@/components/ScrollArea';
 import { LeaveConfirmProvider } from '@/services/useLeaveConfirm';
 import { TransitionProvider } from '@/services/useNavTransition';
 import { Header } from './components/Header';
@@ -18,19 +18,22 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
                 <section className="flex h-full min-h-0 flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(198,236,211,0.72),transparent_28%),linear-gradient(180deg,var(--fill-b)_0%,var(--fill-a)_55%,var(--fill-b)_100%)]">
                     <Header />
                     <TopProgressBar />
-                    <section className="mx-auto flex min-h-0 w-full max-w-screen-2xl flex-1 px-4 py-4 sm:px-6 lg:px-8">
-                        <section className="grid min-h-0 w-full items-start grid-cols-[auto_minmax(0,1fr)] gap-4 xl:grid-cols-4">
-                            <div className="w-fit self-start xl:w-auto">
+                    <section className="mx-auto flex min-h-0 w-full max-w-screen-2xl flex-1 gap-4 px-4 py-4 sm:px-6 lg:px-8">
+                        <div className="w-[4.75rem] shrink-0 xl:w-[22rem]">
+                            <div className="h-full min-h-0 rounded-2xl bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.68),transparent_30%),linear-gradient(180deg,rgba(236,248,240,0.96)_0%,rgba(225,243,231,0.9)_100%)] xl:rounded-3xl">
                                 <Sidebar />
                             </div>
+                        </div>
 
-                            <ViewportBoundScroll
-                                className="min-w-0 overflow-hidden rounded-3xl border border-neutral-j bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(246,246,247,0.92)_100%)] shadow-[0_28px_70px_rgba(0,54,22,0.08)] xl:col-span-3"
+                        <div className="flex min-w-0 flex-1 min-h-0">
+                            <ScrollArea
+                                className="h-full min-h-0 min-w-0 flex-1 rounded-3xl border border-neutral-j bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(246,246,247,0.92)_100%)] shadow-[0_28px_70px_rgba(0,54,22,0.08)]"
+                                viewportClassName="h-full"
                                 contentClassName="min-w-0 p-4 sm:p-5 lg:p-6"
                             >
                                 {children}
-                            </ViewportBoundScroll>
-                        </section>
+                            </ScrollArea>
+                        </div>
                     </section>
                 </section>
             </LeaveConfirmProvider>

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { ViewportBoundScroll } from '@/components/ViewportBoundScroll';
+import { ScrollArea } from '@/components/ScrollArea';
 import { cn } from '@/libs/utils';
 import { toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
@@ -30,8 +30,9 @@ export function Sidebar() {
     }, [pathname]);
 
     return (
-        <ViewportBoundScroll
-            className="sticky top-[4.5rem] overflow-hidden rounded-2xl border border-neutral-j shadow-[0_24px_56px_rgba(0,54,22,0.08)] xl:rounded-3xl"
+        <ScrollArea
+            className="h-full rounded-2xl border border-neutral-j shadow-[0_24px_56px_rgba(0,54,22,0.08)] xl:rounded-3xl"
+            viewportClassName="h-full"
             contentClassName="p-2 xl:p-4"
         >
             <nav ref={navRef} className="space-y-3">
@@ -99,6 +100,6 @@ export function Sidebar() {
                     );
                 })}
             </nav>
-        </ViewportBoundScroll>
+        </ScrollArea>
     );
 }
