@@ -64,7 +64,7 @@
     --neutral-p: rgba(13, 21, 18, 1);
 
     /* 主题背景/前景色 */
-    /* --background: linear-gradient(180deg, #fddcdc 0%, #eff1f2 24.66%); */
+    --background: #f6f6f7;
     --foreground: var(--text-e);
 }
 
@@ -124,6 +124,6 @@
     --neutral-p: rgba(13, 21, 18, 1);
 
     /* 主题背景/前景色 */
-    /* --background: hsla(211, 42%, 12%, 1); */
+    --background: #3d5267;
     --foreground: var(--text-e);
 }

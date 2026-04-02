@@ -111,7 +111,7 @@ export const Header: FunctionComponent = () => {
                 </Link>
 
                 <div className="hidden min-w-0 flex-1 items-center justify-end gap-3 sm:flex">
-                    <div ref={searchRef} className="relative w-full max-w-md">
+                    <div ref={searchRef} className="relative w-full max-w-xl">
                         <input
                             value={query}
                             onFocus={() => {
@@ -242,7 +242,17 @@ export const Header: FunctionComponent = () => {
                         )}
                     </div>
 
-                    <div className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-fill-b p-1">
+                    <div className="min-w-[11.5rem] rounded-full border border-primary-200 bg-primary-100 px-4 py-2 sm:flex sm:items-center sm:gap-3">
+                        <span
+                            className="text-title-sm text-primary-700"
+                            style={{ fontFamily: 'var(--font-rajdhani)' }}
+                        >{`${toolModules.length}`}</span>
+                        <span className="text-body-pc-md text-text-d">
+                            {t('common.modulesCount', { count: toolModules.length })}
+                        </span>
+                    </div>
+
+                    <div className="inline-flex w-[7.5rem] shrink-0 items-center gap-1 rounded-full border border-primary-200 bg-fill-b p-1">
                         {LANGUAGE_OPTIONS.map((option) => {
                             const isActive = option.value === language;
 
@@ -253,27 +263,18 @@ export const Header: FunctionComponent = () => {
                                     onClick={() => {
                                         setLanguage(option.value);
                                     }}
-                                    className={
+                                    className={cn(
+                                        'flex-1 rounded-full px-3 py-1.5 text-center text-body-sm',
                                         isActive
-                                            ? 'rounded-full bg-primary-400 px-3 py-1.5 text-body-sm text-text-a'
-                                            : 'rounded-full px-3 py-1.5 text-body-sm text-text-d transition hover:bg-primary-100'
-                                    }
+                                            ? 'bg-primary-400 text-text-a'
+                                            : 'text-text-d transition hover:bg-primary-100',
+                                    )}
                                     aria-label={`${t('common.language')} ${option.label}`}
                                 >
                                     {option.label}
                                 </button>
                             );
                         })}
-                    </div>
-
-                    <div className="rounded-full border border-primary-200 bg-primary-100 px-4 py-2 sm:flex sm:items-center sm:gap-3">
-                        <span
-                            className="text-title-sm text-primary-700"
-                            style={{ fontFamily: 'var(--font-rajdhani)' }}
-                        >{`${toolModules.length}`}</span>
-                        <span className="text-body-pc-md text-text-d">
-                            {t('common.modulesCount', { count: toolModules.length })}
-                        </span>
                     </div>
                 </div>
             </section>

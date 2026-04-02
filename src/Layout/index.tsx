@@ -15,7 +15,7 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
     return (
         <TransitionProvider>
             <LeaveConfirmProvider>
-                <section className="flex h-full min-h-0 flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(198,236,211,0.72),transparent_28%),linear-gradient(180deg,var(--fill-b)_0%,var(--fill-a)_55%,var(--fill-b)_100%)]">
+                <section className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--background)]">
                     <Header />
                     <TopProgressBar />
                     <section className="mx-auto flex min-h-0 w-full max-w-screen-2xl flex-1 gap-4 px-4 py-4 sm:px-6 lg:px-8">
