@@ -14,20 +14,28 @@ export type ToolModuleSlug =
     | 'http-test'
     | 'websocket-test';
 
+export type ToolCategory = 'text' | 'image' | 'network';
+export type ToolCategoryFilter = ToolCategory | 'all';
+
 export type ToolModule = {
     sort: number;
     slug: ToolModuleSlug;
     href: `/${ToolModuleSlug}`;
+    category: ToolCategory;
     badge: string;
     title: LocalizedText;
     description: LocalizedText;
 };
+
+export const toolCategoryOrder: ToolCategory[] = ['text', 'image', 'network'];
+export const toolCategoryFilterOrder: ToolCategoryFilter[] = ['all', ...toolCategoryOrder];
 
 const toolModuleRegistry: ToolModule[] = [
     {
         sort: 10,
         slug: 'timestamp',
         href: '/timestamp',
+        category: 'text',
         badge: 'TIME',
         title: { zh: '时间戳转换', en: 'Timestamp Converter' },
         description: {
@@ -39,6 +47,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 60,
         slug: 'exchange-rate',
         href: '/exchange-rate',
+        category: 'text',
         badge: 'FX',
         title: { zh: '汇率转换', en: 'Exchange Rates' },
         description: {
@@ -50,6 +59,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 30,
         slug: 'qrcode',
         href: '/qrcode',
+        category: 'image',
         badge: 'QR',
         title: { zh: '二维码生成与反解', en: 'QR Code Tool' },
         description: {
@@ -61,6 +71,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 35,
         slug: 'image-watermark',
         href: '/image-watermark',
+        category: 'image',
         badge: 'WM',
         title: { zh: '图片加水印', en: 'Image Watermark' },
         description: {
@@ -72,6 +83,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 37,
         slug: 'image-crop',
         href: '/image-crop',
+        category: 'image',
         badge: 'CROP',
         title: { zh: '图片裁剪', en: 'Image Crop' },
         description: {
@@ -83,6 +95,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 40,
         slug: 'base64',
         href: '/base64',
+        category: 'text',
         badge: 'B64',
         title: { zh: 'Base64 编解码', en: 'Base64 Tool' },
         description: {
@@ -94,6 +107,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 50,
         slug: 'json-tools',
         href: '/json-tools',
+        category: 'text',
         badge: 'JSON',
         title: { zh: 'JSON 校验与格式化', en: 'JSON Tools' },
         description: {
@@ -105,6 +119,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 20,
         slug: 'markdown',
         href: '/markdown',
+        category: 'text',
         badge: 'MD',
         title: { zh: 'Markdown 实时预览', en: 'Markdown Preview' },
         description: {
@@ -116,6 +131,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 85,
         slug: 'local-network',
         href: '/local-network',
+        category: 'network',
         badge: 'LAN',
         title: { zh: '本地网络测试', en: 'Local Network Test' },
         description: {
@@ -127,6 +143,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 90,
         slug: 'network-speed',
         href: '/network-speed',
+        category: 'network',
         badge: 'PING',
         title: { zh: 'Ping 测试', en: 'Global Ping Test' },
         description: {
@@ -138,6 +155,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 70,
         slug: 'http-test',
         href: '/http-test',
+        category: 'network',
         badge: 'HTTP',
         title: { zh: 'HTTP 测试', en: 'HTTP Tester' },
         description: {
@@ -149,6 +167,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 80,
         slug: 'websocket-test',
         href: '/websocket-test',
+        category: 'network',
         badge: 'WS',
         title: { zh: 'WebSocket 测试', en: 'WebSocket Tester' },
         description: {
@@ -164,4 +183,16 @@ export const defaultToolHref = toolModules[0].href;
 
 export function getToolModule(slug: ToolModuleSlug) {
     return toolModules.find((tool) => tool.slug === slug) ?? toolModules[0];
+}
+
+export function getToolsByCategory(category: ToolCategory) {
+    return toolModules.filter((tool) => tool.category === category);
+}
+
+export function isToolCategory(value: string | null | undefined): value is ToolCategory {
+    return value === 'text' || value === 'image' || value === 'network';
+}
+
+export function normalizeToolCategoryFilter(value: string | null | undefined): ToolCategoryFilter {
+    return isToolCategory(value) ? value : 'all';
 }

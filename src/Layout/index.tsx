@@ -7,6 +7,7 @@ import { TransitionProvider } from '@/services/useNavTransition';
 import { ToastProvider } from '@/services/useToast';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
+import { ToolCategoryBar } from './components/ToolCategoryBar';
 import { TopProgressBar } from './components/TopProgressBar';
 
 /**
@@ -19,6 +20,7 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
                 <ToastProvider>
                     <section className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--background)]">
                         <Header />
+                        <ToolCategoryBar />
                         <TopProgressBar />
                         <section className="mx-auto flex min-h-0 w-full max-w-[1800px] flex-1 gap-4 px-4 py-4 sm:px-6 lg:px-8 2xl:max-w-[1920px]">
                             <div className="w-[4.75rem] shrink-0 xl:w-[20rem] 2xl:w-[21rem]">

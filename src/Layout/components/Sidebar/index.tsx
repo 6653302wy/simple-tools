@@ -1,10 +1,10 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useRef } from 'react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { cn } from '@/libs/utils';
-import { toolModules } from '@/modules/tool-registry';
+import { normalizeToolCategoryFilter, toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
 import { resolveLocalizedText } from '@/services/i18n/constant';
 import { buildLocalizedHref, stripLanguagePrefix } from '@/services/i18n/routing';
@@ -14,12 +14,21 @@ import { useNavTransition } from '@/services/useNavTransition';
 /** 左侧菜单 */
 export function Sidebar() {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const router = useRouter();
     const navRef = useRef<HTMLElement | null>(null);
     const { language } = useI18n();
     const { startTransition } = useNavTransition();
     const { confirmLeave } = useLeaveConfirm();
     const normalizedPathname = stripLanguagePrefix(pathname);
+    const activeCategoryFilter = normalizeToolCategoryFilter(searchParams.get('tools'));
+    const visibleTools = useMemo(
+        () =>
+            activeCategoryFilter === 'all'
+                ? toolModules
+                : toolModules.filter((tool) => tool.category === activeCategoryFilter),
+        [activeCategoryFilter],
+    );
 
     useEffect(() => {
         void pathname;
@@ -48,7 +57,7 @@ export function Sidebar() {
             contentClassName="p-2 xl:p-4"
         >
             <nav ref={navRef} className="space-y-3">
-                {toolModules.map((tool, index) => {
+                {visibleTools.map((tool, index) => {
                     const isActive = normalizedPathname.startsWith(tool.href);
 
                     return (
@@ -65,7 +74,9 @@ export function Sidebar() {
 
                                 confirmLeave(() => {
                                     startTransition(() => {
-                                        router.push(buildLocalizedHref(language, tool.href));
+                                        const currentQuery = searchParams.toString();
+                                        const nextHref = buildLocalizedHref(language, tool.href);
+                                        router.push(currentQuery ? `${nextHref}?${currentQuery}` : nextHref);
                                     });
                                 });
                             }}
