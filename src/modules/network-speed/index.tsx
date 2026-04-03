@@ -61,7 +61,7 @@ type ProbeEntry = {
     timingsCount: number;
 };
 
-type ChinaPingResponse = {
+type GlobalPingResponse = {
     input: string;
     normalizedTarget: string;
     measurementId: string;
@@ -185,10 +185,10 @@ function projectPoint(longitude: number | null, latitude: number | null) {
         return null;
     }
 
-    const minLon = 72;
-    const maxLon = 136;
-    const minLat = 3;
-    const maxLat = 54;
+    const minLon = -180;
+    const maxLon = 180;
+    const minLat = -60;
+    const maxLat = 80;
 
     return {
         x: ((longitude - minLon) / (maxLon - minLon)) * 100,
@@ -205,7 +205,7 @@ export function NetworkSpeedTool() {
         mobile: true,
         edge: true,
     });
-    const [result, setResult] = useState<ChinaPingResponse | null>(null);
+    const [result, setResult] = useState<GlobalPingResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [zone, setZone] = useState<ZoneKey>('china');
@@ -303,7 +303,7 @@ export function NetworkSpeedTool() {
             setLoading(true);
             setError('');
 
-            const response = await fetch('/api/china-ping', {
+            const response = await fetch('/api/global-ping', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -315,7 +315,7 @@ export function NetworkSpeedTool() {
                 }),
             });
 
-            const payload = (await response.json()) as ChinaPingResponse | { message?: string };
+            const payload = (await response.json()) as GlobalPingResponse | { message?: string };
 
             if (!response.ok) {
                 throw new Error(
@@ -323,7 +323,7 @@ export function NetworkSpeedTool() {
                 );
             }
 
-            const probePayload = payload as ChinaPingResponse;
+            const probePayload = payload as GlobalPingResponse;
 
             setResult(probePayload);
             setRunHistory((previousHistory) => {
@@ -430,13 +430,13 @@ export function NetworkSpeedTool() {
 
             <section className={cn(panelClassName, 'space-y-4')}>
                 <section className="space-y-2">
-                    <label className="text-body-sm text-text-c" htmlFor="china-ping-target-input">
+                    <label className="text-body-sm text-text-c" htmlFor="global-ping-target-input">
                         {t('network.target')}
                     </label>
 
                     <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
                         <input
-                            id="china-ping-target-input"
+                            id="global-ping-target-input"
                             className={inputClassName}
                             value={target}
                             onChange={(event) => {
@@ -577,23 +577,26 @@ export function NetworkSpeedTool() {
                             />
                         ))}
 
-                        <span className="absolute left-[18%] top-[18%] text-body-xs text-text-c">
+                        <span className="absolute left-[13%] top-[26%] text-body-xs text-text-c">
                             {t('network.regionNorth')}
                         </span>
-                        <span className="absolute left-[30%] top-[40%] text-body-xs text-text-c">
-                            {t('network.regionNorthwest')}
-                        </span>
-                        <span className="absolute left-[44%] top-[52%] text-body-xs text-text-c">
-                            {t('network.regionCentral')}
-                        </span>
-                        <span className="absolute left-[60%] top-[38%] text-body-xs text-text-c">
+                        <span className="absolute left-[43%] top-[21%] text-body-xs text-text-c">
                             {t('network.regionEast')}
                         </span>
-                        <span className="absolute left-[60%] top-[68%] text-body-xs text-text-c">
+                        <span className="absolute left-[68%] top-[26%] text-body-xs text-text-c">
                             {t('network.regionSouth')}
                         </span>
-                        <span className="absolute left-[80%] top-[58%] text-body-xs text-text-c">
-                            {t('network.regionHkmoTw')}
+                        <span className="absolute left-[74%] top-[70%] text-body-xs text-text-c">
+                            {t('network.regionCentral')}
+                        </span>
+                        <span className="absolute left-[22%] top-[72%] text-body-xs text-text-c">
+                            {t('network.regionSouthwest')}
+                        </span>
+                        <span className="absolute left-[46%] top-[63%] text-body-xs text-text-c">
+                            {t('network.regionNorthwest')}
+                        </span>
+                        <span className="absolute left-[55%] top-[54%] text-body-xs text-text-c">
+                            {t('network.regionNortheast')}
                         </span>
 
                         {zoneProbes.length > 0 ? (
@@ -757,11 +760,13 @@ export function NetworkSpeedTool() {
                         <p className="mt-1 text-body-pc-md text-text-d">{t('network.ipStatsDescription')}</p>
                     </div>
 
-                    <CopyButton
-                        text={zoneIpDistribution.map((item) => item.address).join('\n')}
-                        className={compactChipClassName}
-                        idleLabel={t('network.copyIps')}
-                    />
+                    {zoneIpDistribution.length ? (
+                        <CopyButton
+                            text={zoneIpDistribution.map((item) => item.address).join('\n')}
+                            className={compactChipClassName}
+                            idleLabel={t('network.copyIps')}
+                        />
+                    ) : null}
                 </div>
 
                 {zoneIpDistribution.length > 0 ? (

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type WheelEvent } from 'react';
 import { Cropper, type ReactCropperElement } from 'react-cropper';
 import { Button } from '@/components/Button';
+import { ClearButton } from '@/components/ClearButton';
 import { FileDropzone } from '@/components/FileDropzone';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { useI18n } from '@/services/i18n';
@@ -302,9 +303,7 @@ export function ImageCropTool() {
                             label={sourceImage ? t('imageCrop.replaceImage') : t('imageCrop.uploadImage')}
                             onFilesSelect={handleFilesSelect}
                         />
-                        <Button variant="secondary" disabled={!sourceImage} onClick={handleClear}>
-                            {t('imageCrop.clearImage')}
-                        </Button>
+                        <ClearButton disabled={!sourceImage} label={t('imageCrop.clearImage')} onClick={handleClear} />
                     </div>
 
                     <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-neutral-j bg-fill-b p-4">

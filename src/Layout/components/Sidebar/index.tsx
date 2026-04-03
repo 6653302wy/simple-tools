@@ -21,10 +21,20 @@ export function Sidebar() {
 
     useEffect(() => {
         void pathname;
+        const viewport = navRef.current?.closest('[data-radix-scroll-area-viewport]') as HTMLElement | null;
         const activeItem = navRef.current?.querySelector<HTMLElement>('[data-active="true"]');
 
-        activeItem?.scrollIntoView({
-            block: 'nearest',
+        if (!viewport || !activeItem) {
+            return;
+        }
+
+        const viewportRect = viewport.getBoundingClientRect();
+        const activeRect = activeItem.getBoundingClientRect();
+        const nextScrollTop =
+            viewport.scrollTop + activeRect.top - viewportRect.top - viewport.clientHeight / 2 + activeRect.height / 2;
+
+        viewport.scrollTo({
+            top: Math.max(0, nextScrollTop),
             behavior: 'smooth',
         });
     }, [pathname]);

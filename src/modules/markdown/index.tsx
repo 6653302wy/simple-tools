@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/Button';
-import { CopyButton } from '@/components/CopyButton';
+import { ClearButton } from '@/components/ClearButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { cn } from '@/libs/utils';
 import { useI18n } from '@/services/i18n';
@@ -170,21 +170,13 @@ export function MarkdownTool() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <CopyButton
-                                text={markdown}
-                                className="px-3 py-2 text-body-sm"
-                                idleLabel={t('markdown.copyMarkdown')}
-                            />
-                            <Button
-                                variant="secondary"
+                            <ClearButton
                                 className="px-3 py-2 text-body-sm"
                                 disabled={!markdown}
                                 onClick={() => {
                                     setMarkdown('');
                                 }}
-                            >
-                                {t('common.clear')}
-                            </Button>
+                            />
                         </div>
                     </div>
 

@@ -122,11 +122,13 @@ export function Base64Tool() {
                             <label className="text-body-sm text-text-c" htmlFor="base64-text-output">
                                 {t('base64.outputResult')}
                             </label>
-                            <CopyButton
-                                text={textError || textOutput}
-                                className="px-3 py-2 text-body-sm"
-                                idleLabel={t('common.copyResult')}
-                            />
+                            {textError || textOutput ? (
+                                <CopyButton
+                                    text={textError || textOutput}
+                                    className="px-3 py-2 text-body-sm"
+                                    idleLabel={t('common.copyResult')}
+                                />
+                            ) : null}
                         </div>
                         <textarea
                             id="base64-text-output"
@@ -192,11 +194,13 @@ export function Base64Tool() {
                             <label className="text-body-sm text-text-c" htmlFor="image-base64-output">
                                 {t('base64.base64Output')}
                             </label>
-                            <CopyButton
-                                text={imageError || imageBase64}
-                                className="px-3 py-2 text-body-sm"
-                                idleLabel={t('common.copyResult')}
-                            />
+                            {imageError || imageBase64 ? (
+                                <CopyButton
+                                    text={imageError || imageBase64}
+                                    className="px-3 py-2 text-body-sm"
+                                    idleLabel={t('common.copyResult')}
+                                />
+                            ) : null}
                         </div>
                         <textarea
                             id="image-base64-output"

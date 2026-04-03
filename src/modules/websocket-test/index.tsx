@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/Button';
+import { ClearButton } from '@/components/ClearButton';
 import { CopyButton } from '@/components/CopyButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { ScrollArea } from '@/components/ScrollArea';
@@ -289,9 +290,12 @@ export function WebSocketTestTool() {
                             <Button disabled={!canSend} onClick={sendMessage}>
                                 {t('websocket.send')}
                             </Button>
-                            <Button variant="secondary" onClick={() => setMessageInput('')}>
-                                {t('httpTest.clear')}
-                            </Button>
+                            <ClearButton
+                                label={t('httpTest.clear')}
+                                onClick={() => {
+                                    setMessageInput('');
+                                }}
+                            />
                         </div>
                     </div>
                 </section>
@@ -304,10 +308,14 @@ export function WebSocketTestTool() {
                         </div>
 
                         <div className="flex gap-2">
-                            <CopyButton text={logText} className="px-3 py-2 text-body-sm" />
-                            <Button variant="secondary" className="px-3 py-2 text-body-sm" onClick={() => setLogs([])}>
-                                {t('websocket.clear')}
-                            </Button>
+                            {logs.length ? <CopyButton text={logText} className="px-3 py-2 text-body-sm" /> : null}
+                            <ClearButton
+                                className="px-3 py-2 text-body-sm"
+                                label={t('websocket.clear')}
+                                onClick={() => {
+                                    setLogs([]);
+                                }}
+                            />
                         </div>
                     </div>
 

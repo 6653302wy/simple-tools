@@ -9,6 +9,7 @@ export type ToolModuleSlug =
     | 'base64'
     | 'json-tools'
     | 'markdown'
+    | 'local-network'
     | 'network-speed'
     | 'http-test'
     | 'websocket-test';
@@ -112,14 +113,25 @@ const toolModuleRegistry: ToolModule[] = [
         },
     },
     {
+        sort: 85,
+        slug: 'local-network',
+        href: '/local-network',
+        badge: 'LAN',
+        title: { zh: '本地网络测试', en: 'Local Network Test' },
+        description: {
+            zh: '检测当前浏览器公网出口、IPv4/IPv6 可达性与 WebRTC 地址暴露情况。',
+            en: 'Inspect public egress IPs, IPv4/IPv6 reachability and WebRTC address exposure in the browser.',
+        },
+    },
+    {
         sort: 90,
         slug: 'network-speed',
         href: '/network-speed',
         badge: 'PING',
-        title: { zh: 'Ping 测试', en: 'China Ping Test' },
+        title: { zh: 'Ping 测试', en: 'Global Ping Test' },
         description: {
-            zh: '基于开源探针网络，从中国电信、联通、移动及港澳台/海外节点测试目标延迟与丢包。',
-            en: 'Measure latency and packet loss from China Telecom, Unicom, Mobile and edge probes with an open-source network.',
+            zh: '基于开源探针网络，从全球主要国家和地区节点测试目标延迟与丢包。',
+            en: 'Measure latency and packet loss from major countries and regions worldwide through an open-source probe network.',
         },
     },
     {

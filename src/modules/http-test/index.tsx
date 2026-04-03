@@ -12,6 +12,8 @@ const inputClassName =
     'w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const textareaClassName =
     'h-full min-h-0 w-full flex-1 rounded-2xl border border-neutral-j bg-fill-b px-3 py-3 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
+const responseTextareaClassName =
+    'h-full min-h-[22rem] w-full flex-1 rounded-[1.5rem] border border-neutral-j bg-fill-a px-4 py-4 text-body-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const panelClassName = 'rounded-3xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
 const tabClassName = 'rounded-full border px-3 py-1.5 text-body-sm transition whitespace-nowrap';
 
@@ -19,14 +21,27 @@ const methodOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS
     label: method,
     value: method,
 }));
+const contentTypeOptions = [
+    { label: 'None', value: 'none' },
+    { label: 'JSON (application/json)', value: 'application/json' },
+    {
+        label: 'Form URL Encoded (application/x-www-form-urlencoded)',
+        value: 'application/x-www-form-urlencoded',
+    },
+    { label: 'Form Data (multipart/form-data)', value: 'multipart/form-data' },
+    { label: 'Plain Text (text/plain)', value: 'text/plain' },
+    { label: 'HTML (text/html)', value: 'text/html' },
+    { label: 'XML (application/xml)', value: 'application/xml' },
+    { label: 'XML (text/xml)', value: 'text/xml' },
+    { label: 'Binary (application/octet-stream)', value: 'application/octet-stream' },
+];
 
 type HttpResponsePayload = {
     body: string;
-    contentType: string;
     durationMs: number;
-    finalUrl: string;
     headers: Record<string, string>;
     ok: boolean;
+    responseBytes: number;
     status: number;
     statusText: string;
     truncated: boolean;
@@ -51,11 +66,60 @@ function getStatusToneClass(status: number) {
     return 'border-[rgba(235,51,51,0.18)] bg-[rgba(235,51,51,0.08)] text-error';
 }
 
+function getBodyPlaceholder(contentType: string, fallback: string) {
+    switch (contentType) {
+        case 'application/json':
+            return '{\n  "name": "simple-tools"\n}';
+        case 'application/x-www-form-urlencoded':
+            return 'name=simple-tools&lang=zh';
+        case 'multipart/form-data':
+            return 'name=simple-tools\nlang=zh';
+        case 'text/plain':
+            return 'plain text payload';
+        case 'text/html':
+            return '<div>Hello HTTP</div>';
+        case 'application/xml':
+        case 'text/xml':
+            return '<root>\n  <name>simple-tools</name>\n</root>';
+        case 'application/octet-stream':
+            return 'raw-binary-content';
+        default:
+            return fallback;
+    }
+}
+
+function syncHeadersWithContentType(headersText: string, nextContentType: string) {
+    let nextHeaders: Record<string, string> = {};
+
+    try {
+        const parsed = headersText.trim() ? JSON.parse(headersText) : {};
+
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            nextHeaders = Object.fromEntries(Object.entries(parsed).map(([key, value]) => [key, String(value)]));
+        }
+    } catch {
+        nextHeaders = {};
+    }
+
+    if (nextContentType === 'none') {
+        delete nextHeaders['Content-Type'];
+        delete nextHeaders['content-type'];
+    } else {
+        delete nextHeaders['content-type'];
+        nextHeaders['Content-Type'] = nextContentType;
+    }
+
+    return JSON.stringify(nextHeaders, null, 2);
+}
+
 export function HttpTestTool() {
     const { language, t } = useI18n();
     const [method, setMethod] = useState('GET');
+    const [contentType, setContentType] = useState('application/json');
     const [url, setUrl] = useState('https://httpbin.org/anything');
-    const [headersText, setHeadersText] = useState('{\n  "Accept": "application/json"\n}');
+    const [headersText, setHeadersText] = useState(
+        '{\n  "Accept": "application/json",\n  "Content-Type": "application/json"\n}',
+    );
     const [bodyText, setBodyText] = useState('');
     const [responseData, setResponseData] = useState<HttpResponsePayload | null>(null);
     const [error, setError] = useState('');
@@ -65,6 +129,8 @@ export function HttpTestTool() {
 
     const responseHeaders = useMemo(() => (responseData ? stringifyHeaders(responseData.headers) : ''), [responseData]);
     const bodyDisabled = method === 'GET' || method === 'HEAD';
+    const responseHeaderCount = responseData ? Object.keys(responseData.headers).length : 0;
+    const bodyPlaceholder = getBodyPlaceholder(contentType, t('httpTest.bodyPlaceholder'));
     const responseBodyText = responseData
         ? responseData.body
             ? responseData.truncated
@@ -72,6 +138,7 @@ export function HttpTestTool() {
                 : responseData.body
             : t('httpTest.emptyBody')
         : '';
+    const responseCopyText = responseTab === 'headers' ? responseHeaders : responseBodyText;
 
     async function handleSend() {
         if (!/^https?:\/\//i.test(url.trim())) {
@@ -108,6 +175,7 @@ export function HttpTestTool() {
                 },
                 body: JSON.stringify({
                     body: bodyDisabled ? '' : bodyText,
+                    contentType: contentType === 'none' ? '' : contentType,
                     headers: parsedHeaders,
                     language,
                     method,
@@ -138,30 +206,52 @@ export function HttpTestTool() {
             <ModuleIntro badge="HTTP" title={t('httpTest.introTitle')} description={t('httpTest.introDescription')} />
 
             <section className={cn(panelClassName, 'space-y-4')}>
-                <section className="grid gap-3 lg:grid-cols-[8.5rem_minmax(0,1fr)_auto]">
-                    <Select
-                        className="h-12"
-                        value={method}
-                        options={methodOptions}
-                        onValueChange={(value) => {
-                            setMethod(value);
+                <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-[8.5rem_14rem_minmax(0,1fr)_auto]">
+                    <div className="space-y-2">
+                        <p className="text-body-sm text-text-c">{t('httpTest.method')}</p>
+                        <Select
+                            className="h-12"
+                            value={method}
+                            options={methodOptions}
+                            onValueChange={(value) => {
+                                setMethod(value);
 
-                            if (value === 'GET' || value === 'HEAD') {
-                                setRequestTab('headers');
-                            }
-                        }}
-                    />
+                                if (value === 'GET' || value === 'HEAD') {
+                                    setRequestTab('headers');
+                                }
+                            }}
+                        />
+                    </div>
 
-                    <input
-                        className={cn(inputClassName, 'h-12')}
-                        value={url}
-                        onChange={(event) => {
-                            setUrl(event.target.value);
-                        }}
-                        placeholder={t('httpTest.urlPlaceholder')}
-                    />
+                    <div className="space-y-2">
+                        <p className="text-body-sm text-text-c">{t('httpTest.contentType')}</p>
+                        <Select
+                            className="h-12"
+                            value={contentType}
+                            options={contentTypeOptions.map((item) => ({
+                                label: item.value === 'none' ? t('httpTest.contentTypeNone') : item.label,
+                                value: item.value,
+                            }))}
+                            onValueChange={(value) => {
+                                setContentType(value);
+                                setHeadersText((current) => syncHeadersWithContentType(current, value));
+                            }}
+                        />
+                    </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="space-y-2">
+                        <p className="text-body-sm text-text-c">{t('httpTest.url')}</p>
+                        <input
+                            className={cn(inputClassName, 'h-12')}
+                            value={url}
+                            onChange={(event) => {
+                                setUrl(event.target.value);
+                            }}
+                            placeholder={t('httpTest.urlPlaceholder')}
+                        />
+                    </div>
+
+                    <div className="flex items-end">
                         <Button loading={loading} className="h-12 px-5" onClick={() => void handleSend()}>
                             {t('httpTest.send')}
                         </Button>
@@ -221,7 +311,6 @@ export function HttpTestTool() {
                                 <div className="flex min-h-0 flex-1 flex-col gap-2">
                                     <div className="flex items-center justify-between gap-3">
                                         <p className="text-body-sm text-text-c">{t('httpTest.headers')}</p>
-                                        <CopyButton text={headersText} className="px-3 py-2 text-body-sm" />
                                     </div>
                                     <textarea
                                         className={textareaClassName}
@@ -236,9 +325,6 @@ export function HttpTestTool() {
                                 <div className="flex min-h-0 flex-1 flex-col gap-2">
                                     <div className="flex items-center justify-between gap-3">
                                         <p className="text-body-sm text-text-c">{t('httpTest.body')}</p>
-                                        {!bodyDisabled && (
-                                            <CopyButton text={bodyText} className="px-3 py-2 text-body-sm" />
-                                        )}
                                     </div>
                                     <textarea
                                         className={cn(
@@ -249,7 +335,7 @@ export function HttpTestTool() {
                                         onChange={(event) => {
                                             setBodyText(event.target.value);
                                         }}
-                                        placeholder={t('httpTest.bodyPlaceholder')}
+                                        placeholder={bodyPlaceholder}
                                         disabled={bodyDisabled}
                                     />
                                 </div>
@@ -261,60 +347,53 @@ export function HttpTestTool() {
                 <section className={cn(panelClassName, 'flex min-h-0 flex-col')}>
                     <div className="flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-title-lg text-text-e">{t('httpTest.responseTitle')}</p>
-                            <p className="mt-1 text-body-pc-md text-text-d">{t('httpTest.responseDescription')}</p>
+                            <p className="text-title-md text-text-e">{t('httpTest.responseTitle')}</p>
+                            <p className="mt-1 text-body-sm text-text-d">{t('httpTest.responseDescription')}</p>
                         </div>
 
                         {responseData && (
-                            <div
-                                className={cn(
-                                    'rounded-full border px-4 py-2 text-body-sm',
-                                    getStatusToneClass(responseData.status),
-                                )}
-                            >
-                                {`${responseData.status} ${responseData.statusText}`}
+                            <div className="flex items-center gap-2">
+                                <CopyButton text={responseCopyText} className="self-center" />
+                                <div
+                                    className={cn(
+                                        'rounded-full border px-3 py-1.5 text-body-xs',
+                                        getStatusToneClass(responseData.status),
+                                    )}
+                                >
+                                    {`${responseData.status} ${responseData.statusText}`}
+                                </div>
                             </div>
                         )}
                     </div>
 
                     {responseData ? (
                         <div className="mt-4 grid min-h-0 flex-1 gap-4">
-                            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                                <div className="rounded-2xl border border-neutral-j bg-fill-b px-4 py-3">
-                                    <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">
-                                        {t('httpTest.status')}
-                                    </p>
-                                    <p className="mt-1.5 text-body-pc-md text-text-e">{responseData.status}</p>
-                                </div>
-                                <div className="rounded-2xl border border-neutral-j bg-fill-b px-4 py-3">
+                            <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+                                <div className="rounded-[1.25rem] border border-neutral-j bg-fill-b px-3 py-2.5">
                                     <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">
                                         {t('httpTest.duration')}
                                     </p>
-                                    <p className="mt-1.5 text-body-pc-md text-text-e">{`${responseData.durationMs.toFixed(1)} ms`}</p>
+                                    <p className="mt-1 text-body-sm text-text-e">{`${responseData.durationMs.toFixed(1)} ms`}</p>
                                 </div>
-                                <div className="rounded-2xl border border-neutral-j bg-fill-b px-4 py-3 sm:col-span-2">
+                                <div className="rounded-[1.25rem] border border-neutral-j bg-fill-b px-3 py-2.5">
                                     <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">
-                                        {t('httpTest.contentType')}
+                                        {t('httpTest.responseSize')}
                                     </p>
-                                    <p className="mt-1.5 break-all text-body-pc-md text-text-e">
-                                        {responseData.contentType || '--'}
-                                    </p>
+                                    <p className="mt-1 text-body-sm text-text-e">{`${responseData.responseBytes} B`}</p>
                                 </div>
-                                <div className="rounded-2xl border border-neutral-j bg-fill-b px-4 py-3 sm:col-span-2 xl:col-span-4">
+                                <div className="rounded-[1.25rem] border border-neutral-j bg-fill-b px-3 py-2.5">
                                     <p className="text-body-xs uppercase tracking-[0.18em] text-text-c">
-                                        {t('httpTest.finalUrl')}
+                                        {t('httpTest.responseHeadersCount')}
                                     </p>
-                                    <p className="mt-1.5 break-all text-body-pc-md text-text-e">
-                                        {responseData.finalUrl}
-                                    </p>
+                                    <p className="mt-1 text-body-sm text-text-e">{responseHeaderCount}</p>
                                 </div>
                             </div>
 
-                            <div className="inline-flex w-fit rounded-full border border-neutral-j bg-fill-b p-1">
+                            <div className="inline-flex w-fit rounded-full border border-neutral-j bg-fill-b p-0.5">
                                 <Button
                                     variant="plain"
                                     className={cn(
-                                        tabClassName,
+                                        'rounded-full border px-2.5 py-1 text-body-xs transition whitespace-nowrap',
                                         responseTab === 'body'
                                             ? 'border-primary-200 bg-primary-100 text-primary-700'
                                             : 'border-transparent text-text-d hover:bg-fill-a',
@@ -328,7 +407,7 @@ export function HttpTestTool() {
                                 <Button
                                     variant="plain"
                                     className={cn(
-                                        tabClassName,
+                                        'rounded-full border px-2.5 py-1 text-body-xs transition whitespace-nowrap',
                                         responseTab === 'headers'
                                             ? 'border-primary-200 bg-primary-100 text-primary-700'
                                             : 'border-transparent text-text-d hover:bg-fill-a',
@@ -348,7 +427,11 @@ export function HttpTestTool() {
                                             <p className="text-body-sm text-text-c">{t('httpTest.responseBody')}</p>
                                             <CopyButton text={responseBodyText} className="px-3 py-2 text-body-sm" />
                                         </div>
-                                        <textarea className={textareaClassName} value={responseBodyText} readOnly />
+                                        <textarea
+                                            className={responseTextareaClassName}
+                                            value={responseBodyText}
+                                            readOnly
+                                        />
                                     </div>
                                 ) : (
                                     <div className="flex min-h-0 flex-1 flex-col gap-2">
@@ -356,7 +439,11 @@ export function HttpTestTool() {
                                             <p className="text-body-sm text-text-c">{t('httpTest.responseHeaders')}</p>
                                             <CopyButton text={responseHeaders} className="px-3 py-2 text-body-sm" />
                                         </div>
-                                        <textarea className={textareaClassName} value={responseHeaders} readOnly />
+                                        <textarea
+                                            className={responseTextareaClassName}
+                                            value={responseHeaders}
+                                            readOnly
+                                        />
                                     </div>
                                 )}
                             </div>

@@ -20,6 +20,11 @@ type LoadedImage = {
     width: number;
 };
 
+type TextMetricsSnapshot = {
+    width: number;
+    height: number;
+};
+
 function loadImage(src: string) {
     return new Promise<HTMLImageElement>((resolve, reject) => {
         const image = new window.Image();
@@ -31,6 +36,17 @@ function loadImage(src: string) {
 
 function clamp(value: number, min: number, max: number) {
     return Math.min(max, Math.max(min, value));
+}
+
+function measureWatermarkText(context: CanvasRenderingContext2D, text: string, fontSize: number): TextMetricsSnapshot {
+    const metrics = context.measureText(text);
+    const width = Math.max(metrics.width, fontSize);
+    const measuredHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+    return {
+        width,
+        height: Math.max(measuredHeight || 0, fontSize),
+    };
 }
 
 export function ImageWatermarkTool() {
@@ -104,19 +120,31 @@ export function ImageWatermarkTool() {
                 const blue = hasValidColor ? Number.parseInt(normalizedColor.slice(4, 6), 16) : 22;
 
                 context.fillStyle = `rgba(${red}, ${green}, ${blue}, ${opacity})`;
-                context.textAlign = 'center';
-                context.textBaseline = 'middle';
                 context.font = `600 ${fontSize}px "Roboto", "Inter", sans-serif`;
 
                 const text = watermarkText.trim() || ' ';
+                const textMetrics = measureWatermarkText(context, text, fontSize);
 
                 if (mode === 'tile') {
                     context.save();
                     context.translate(canvas.width / 2, canvas.height / 2);
                     context.rotate((rotation * Math.PI) / 180);
+                    context.textAlign = 'left';
+                    context.textBaseline = 'top';
 
-                    for (let x = -canvas.width; x <= canvas.width; x += gap) {
-                        for (let y = -canvas.height; y <= canvas.height; y += gap) {
+                    const horizontalStep = textMetrics.width + gap;
+                    const verticalStep = textMetrics.height + gap;
+
+                    for (
+                        let x = -canvas.width - textMetrics.width;
+                        x <= canvas.width + textMetrics.width;
+                        x += horizontalStep
+                    ) {
+                        for (
+                            let y = -canvas.height - textMetrics.height;
+                            y <= canvas.height + textMetrics.height;
+                            y += verticalStep
+                        ) {
                             context.fillText(text, x, y);
                         }
                     }
@@ -124,8 +152,15 @@ export function ImageWatermarkTool() {
                     context.restore();
                 } else {
                     context.save();
-                    context.translate(canvas.width - fontSize * 2.2, canvas.height - fontSize * 1.8);
+                    context.textAlign = 'left';
+                    context.textBaseline = 'top';
+                    const cornerPadding = Math.max(20, fontSize * 0.9);
+                    const anchorX = canvas.width - textMetrics.width - cornerPadding;
+                    const anchorY = canvas.height - textMetrics.height - cornerPadding;
+
+                    context.translate(anchorX + textMetrics.width / 2, anchorY + textMetrics.height / 2);
                     context.rotate((rotation * Math.PI) / 180);
+                    context.translate(-textMetrics.width / 2, -textMetrics.height / 2);
                     context.fillText(text, 0, 0);
                     context.restore();
                 }

@@ -110,46 +110,45 @@ type AggregateEntry = {
 };
 
 const carrierLocations: Record<RequestedCarrierKey, GlobalpingLocation[]> = {
-    telecom: [{ magic: 'AS4134+China', limit: 3 }],
-    unicom: [
-        { magic: 'AS4837+China', limit: 2 },
-        { magic: 'AS9929+China', limit: 1 },
-    ],
-    mobile: [
-        { magic: 'AS9808+China', limit: 2 },
-        { magic: 'AS56041+China', limit: 1 },
-    ],
+    telecom: [{ magic: 'North America', limit: 3 }],
+    unicom: [{ magic: 'Europe', limit: 3 }],
+    mobile: [{ magic: 'Asia', limit: 3 }],
     edge: [
-        { magic: 'Hong Kong', limit: 2 },
-        { magic: 'Taiwan', limit: 2 },
-        { magic: 'Singapore+datacenter-network', limit: 1 },
-        { magic: 'Japan+datacenter-network', limit: 1 },
+        { magic: 'Oceania', limit: 2 },
+        { magic: 'South America', limit: 1 },
+        { magic: 'Africa', limit: 1 },
     ],
 };
+const northAmericaCountryCodes = new Set(['US', 'CA', 'MX']);
+const middleEastCountryCodes = new Set(['AE', 'SA', 'QA', 'KW', 'OM', 'BH', 'IL', 'JO', 'LB', 'IQ']);
 
-const telecomAsns = new Set([4134, 4809, 4812]);
-const unicomAsns = new Set([4837, 9929]);
-const mobileAsns = new Set([9808, 56041]);
-const northCities = new Set(['Beijing', 'Tianjin', 'Taiyuan', 'Shijiazhuang', 'Hohhot', 'Xuzhou']);
-const eastCities = new Set([
-    'Shanghai',
-    'Nanjing',
-    'Suzhou',
-    'Hangzhou',
-    'Ningbo',
-    'Wuxi',
-    'Hefei',
-    'Qingdao',
-    'Jinan',
-    'Xiamen',
-    'Fuzhou',
-    'Nanchang',
-]);
-const southCities = new Set(['Guangzhou', 'Shenzhen', 'Dongguan', 'Foshan', 'Zhuhai', 'Nanning', 'Haikou']);
-const centralCities = new Set(['Wuhan', 'Changsha', 'Zhengzhou']);
-const southwestCities = new Set(['Kunming', 'Chengdu', 'Chongqing', 'Guiyang', 'Lhasa']);
-const northwestCities = new Set(["Xi'an", 'Urumqi', 'Lanzhou', 'Xining', 'Yinchuan']);
-const northeastCities = new Set(['Shenyang', 'Dalian', 'Changchun', 'Harbin']);
+function normalizeContinent(continent: string | null | undefined) {
+    return continent?.trim().toUpperCase() ?? '';
+}
+
+function isNorthAmericaContinent(continent: string) {
+    return continent === 'NA' || continent === 'NORTH AMERICA';
+}
+
+function isEuropeContinent(continent: string) {
+    return continent === 'EU' || continent === 'EUROPE';
+}
+
+function isAsiaContinent(continent: string) {
+    return continent === 'AS' || continent === 'ASIA';
+}
+
+function isOceaniaContinent(continent: string) {
+    return continent === 'OC' || continent === 'OCEANIA';
+}
+
+function isSouthAmericaContinent(continent: string) {
+    return continent === 'SA' || continent === 'SOUTH AMERICA';
+}
+
+function isAfricaContinent(continent: string) {
+    return continent === 'AF' || continent === 'AFRICA';
+}
 
 function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -206,97 +205,76 @@ function parseRequestedCarriers(value: unknown) {
 
 function resolveCarrier(probe: GlobalpingProbeResult['probe']) {
     const countryCode = probe?.country ?? '';
-    const network = probe?.network?.toLowerCase() ?? '';
-    const asn = probe?.asn ?? null;
+    const continent = normalizeContinent(probe?.continent);
 
-    if (countryCode === 'HK' || countryCode === 'TW' || countryCode === 'MO') {
-        return {
-            zone: 'edge' as const,
-            carrierKey: 'edge' as const,
-            carrierLabel: '港澳台',
-        };
-    }
-
-    if (countryCode && countryCode !== 'CN') {
-        return {
-            zone: 'edge' as const,
-            carrierKey: 'edge' as const,
-            carrierLabel: '海外观察',
-        };
-    }
-
-    if ((asn !== null && telecomAsns.has(asn)) || network.includes('telecom') || network.includes('chinanet')) {
+    if (isNorthAmericaContinent(continent) || northAmericaCountryCodes.has(countryCode)) {
         return {
             zone: 'china' as const,
             carrierKey: 'telecom' as const,
-            carrierLabel: '中国电信',
+            carrierLabel: 'North America',
         };
     }
 
-    if ((asn !== null && unicomAsns.has(asn)) || network.includes('unicom')) {
+    if (isEuropeContinent(continent)) {
         return {
             zone: 'china' as const,
             carrierKey: 'unicom' as const,
-            carrierLabel: '中国联通',
+            carrierLabel: 'Europe',
         };
     }
 
-    if ((asn !== null && mobileAsns.has(asn)) || network.includes('mobile')) {
+    if (isAsiaContinent(continent) && !middleEastCountryCodes.has(countryCode)) {
         return {
             zone: 'china' as const,
             carrierKey: 'mobile' as const,
-            carrierLabel: '中国移动',
+            carrierLabel: 'Asia Pacific',
         };
     }
 
     return {
-        zone: 'china' as const,
-        carrierKey: 'other' as const,
-        carrierLabel: '其他网络',
+        zone: 'edge' as const,
+        carrierKey: 'edge' as const,
+        carrierLabel: 'Extended Regions',
     };
 }
 
 function resolveRegion(probe: GlobalpingProbeResult['probe']) {
-    const city = probe?.city ?? '';
     const countryCode = probe?.country ?? '';
+    const continent = normalizeContinent(probe?.continent);
 
-    if (countryCode === 'HK' || countryCode === 'TW' || countryCode === 'MO') {
-        return 'hkmo_tw' satisfies RegionKey;
-    }
-
-    if (countryCode && countryCode !== 'CN') {
-        return 'overseas' satisfies RegionKey;
-    }
-
-    if (northCities.has(city)) {
+    if (isNorthAmericaContinent(continent) || northAmericaCountryCodes.has(countryCode)) {
         return 'north' satisfies RegionKey;
     }
 
-    if (eastCities.has(city)) {
+    if (isEuropeContinent(continent)) {
         return 'east' satisfies RegionKey;
     }
 
-    if (southCities.has(city)) {
-        return 'south' satisfies RegionKey;
-    }
-
-    if (centralCities.has(city)) {
-        return 'central' satisfies RegionKey;
-    }
-
-    if (southwestCities.has(city)) {
-        return 'southwest' satisfies RegionKey;
-    }
-
-    if (northwestCities.has(city)) {
-        return 'northwest' satisfies RegionKey;
-    }
-
-    if (northeastCities.has(city)) {
+    if (middleEastCountryCodes.has(countryCode)) {
         return 'northeast' satisfies RegionKey;
     }
 
-    return 'east';
+    if (isAsiaContinent(continent)) {
+        return 'south' satisfies RegionKey;
+    }
+
+    if (isOceaniaContinent(continent)) {
+        return 'central' satisfies RegionKey;
+    }
+
+    if (isSouthAmericaContinent(continent)) {
+        return 'southwest' satisfies RegionKey;
+    }
+
+    if (isAfricaContinent(continent)) {
+        return 'northwest' satisfies RegionKey;
+    }
+
+    if (countryCode === 'SG' || countryCode === 'HK' || countryCode === 'JP') {
+        return 'hkmo_tw' satisfies RegionKey;
+    }
+
+    return 'overseas';
 }
 
 function resolveLocationLabel(probe: GlobalpingProbeResult['probe']) {
@@ -518,11 +496,11 @@ export async function POST(request: NextRequest) {
     const requestedCarriers = parseRequestedCarriers(payload?.carriers);
 
     if (!normalizedTarget) {
-        return Response.json({ message: translate(language, 'api.chinaPingMissingTarget') }, { status: 400 });
+        return Response.json({ message: translate(language, 'api.globalPingMissingTarget') }, { status: 400 });
     }
 
     if (!requestedCarriers.length) {
-        return Response.json({ message: translate(language, 'api.chinaPingMissingCarrier') }, { status: 400 });
+        return Response.json({ message: translate(language, 'api.globalPingMissingCarrier') }, { status: 400 });
     }
 
     try {
@@ -530,13 +508,13 @@ export async function POST(request: NextRequest) {
         const measurement = await waitForMeasurement(createdMeasurement.id);
 
         if (!measurement) {
-            throw new Error(translate(language, 'api.chinaPingTimeout'));
+            throw new Error(translate(language, 'api.globalPingTimeout'));
         }
 
         return Response.json(buildResponsePayload(input, normalizedTarget, measurement, requestedCarriers));
     } catch (error) {
         const message =
-            error instanceof Error && error.message ? error.message : translate(language, 'api.chinaPingFailed');
+            error instanceof Error && error.message ? error.message : translate(language, 'api.globalPingFailed');
 
         return Response.json({ message }, { status: 400 });
     }

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/Button';
+import Image from 'next/image';
+import { cn } from '@/libs/utils';
 import { useI18n } from '@/services/i18n';
-
-type CopyButtonStatus = 'idle' | 'copied' | 'error';
+import { useToast } from '@/services/useToast';
+import copyImg from './assets/copy.png';
 
 interface CopyButtonProps {
     text: string;
@@ -34,16 +34,7 @@ async function copyText(text: string) {
 /** 复制按钮 */
 export function CopyButton({ text, disabled, idleLabel, copiedLabel, errorLabel, className }: CopyButtonProps) {
     const { t } = useI18n();
-    const [status, setStatus] = useState<CopyButtonStatus>('idle');
-    const timerRef = useRef<number | null>(null);
-
-    useEffect(() => {
-        return () => {
-            if (timerRef.current) {
-                window.clearTimeout(timerRef.current);
-            }
-        };
-    }, []);
+    const { showToast } = useToast();
 
     async function handleCopy() {
         if (!text.trim()) {
@@ -52,35 +43,37 @@ export function CopyButton({ text, disabled, idleLabel, copiedLabel, errorLabel,
 
         try {
             await copyText(text);
-            setStatus('copied');
 
-            if (timerRef.current) {
-                window.clearTimeout(timerRef.current);
-            }
-
-            timerRef.current = window.setTimeout(() => {
-                setStatus('idle');
-            }, 1800);
+            showToast({
+                type: 'success',
+                message: copiedLabel ?? t('common.copied'),
+            });
         } catch {
-            setStatus('error');
+            showToast({
+                type: 'error',
+                message: errorLabel ?? t('common.copyFailed'),
+            });
         }
     }
 
-    const label =
-        status === 'copied'
-            ? (copiedLabel ?? t('common.copied'))
-            : status === 'error'
-              ? (errorLabel ?? t('common.copyFailed'))
-              : (idleLabel ?? t('common.copyResult'));
+    const disabledState = disabled || !text.trim();
 
     return (
-        <Button
-            variant="secondary"
-            className={className}
-            disabled={disabled || !text.trim()}
-            onClick={() => void handleCopy()}
+        <button
+            type="button"
+            aria-label={idleLabel ?? t('common.copyResult')}
+            title={idleLabel ?? t('common.copyResult')}
+            disabled={disabledState}
+            className={cn(
+                'inline-flex h-9 min-w-9 shrink-0 items-center justify-center self-center rounded-full transition',
+                disabledState ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-fill-b active:bg-fill-c',
+                className,
+            )}
+            onClick={() => {
+                void handleCopy();
+            }}
         >
-            {label}
-        </Button>
+            <Image className="pointer-events-none size-6" src={copyImg} alt="Copy" />
+        </button>
     );
 }

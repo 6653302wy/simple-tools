@@ -135,11 +135,13 @@ export function JsonTools() {
                                 </div>
                             </div>
 
-                            <CopyButton
-                                text={result}
-                                className="shrink-0 px-3 py-2 text-body-sm"
-                                idleLabel={t('common.copyResult')}
-                            />
+                            {result ? (
+                                <CopyButton
+                                    text={result}
+                                    className="shrink-0 px-3 py-2 text-body-sm"
+                                    idleLabel={t('common.copyResult')}
+                                />
+                            ) : null}
                         </div>
                         <textarea
                             id="json-result"

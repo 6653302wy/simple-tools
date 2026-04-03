@@ -9,7 +9,7 @@ import { Loading, type LoadingVariant } from '../Loading';
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'text' | 'plain';
 
 const buttonVariants = cva(
-    'w-fit inline-flex items-center justify-center gap-2 rounded-full text-title-md px-4 py-[9.5px] whitespace-nowrap cursor-pointer disabled:pointer-events-none disabled:cursor-not-allowed  ',
+    'w-fit inline-flex items-center justify-center gap-2 rounded-full text-body-md px-4 py-[9.5px] whitespace-nowrap cursor-pointer disabled:pointer-events-none disabled:cursor-not-allowed  ',
     {
         variants: {
             variant: {
