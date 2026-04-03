@@ -148,9 +148,9 @@ export const DatePicker: FC<Props> = ({
                 }}
             >
                 <div className="mb-1 flex items-center justify-end">
-                    <button type="button" onClick={onClose}>
+                    <Button variant="plain" className="p-0" onClick={onClose}>
                         <CloseCircle className="text-text-c size-5" />
-                    </button>
+                    </Button>
                 </div>
                 <div className="w-full">
                     <DayPicker
@@ -229,30 +229,28 @@ export const DatePicker: FC<Props> = ({
                         }}
                         components={{
                             PreviousMonthButton: (props) => (
-                                <button
+                                <Button
                                     {...props}
-                                    type="button"
+                                    variant="plain"
                                     className={cn(
                                         props.className,
-                                        'hover:bg-primary-100! active:bg-primary-200! rounded-sm h-8 ',
+                                        'h-8 rounded-sm p-0 hover:bg-primary-100! active:bg-primary-200! ',
                                     )}
-                                    onClick={props.onClick}
                                 >
                                     <ArrowLeft className="text-primary-400 size-[22px] " />
-                                </button>
+                                </Button>
                             ),
                             NextMonthButton: (props) => (
-                                <button
+                                <Button
                                     {...props}
-                                    type="button"
+                                    variant="plain"
                                     className={cn(
                                         props.className,
-                                        'hover:bg-primary-100! active:bg-primary-200! rounded-sm h-8 ',
+                                        'h-8 rounded-sm p-0 hover:bg-primary-100! active:bg-primary-200! ',
                                     )}
-                                    onClick={props.onClick}
                                 >
                                     <ArrowRight className="text-primary-400 size-[22px]" />
-                                </button>
+                                </Button>
                             ),
                         }}
                     />

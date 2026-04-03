@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { type FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '@/components/Button';
 import { cn } from '@/libs/utils';
 import { type ToolModule, toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
@@ -180,12 +181,12 @@ export const Header: FunctionComponent = () => {
                                             const isHighlighted = index === activeIndex;
 
                                             return (
-                                                <button
+                                                <Button
                                                     key={tool.slug}
                                                     ref={(element) => {
                                                         resultItemRefs.current[index] = element;
                                                     }}
-                                                    type="button"
+                                                    variant="plain"
                                                     onMouseMove={() => {
                                                         setNavigationMode('pointer');
                                                     }}
@@ -197,7 +198,7 @@ export const Header: FunctionComponent = () => {
                                                         navigateToTool(tool);
                                                     }}
                                                     className={cn(
-                                                        'flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition',
+                                                        'flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left text-body-sm whitespace-normal transition',
                                                         isHighlighted
                                                             ? 'border-primary-200 bg-primary-100/80'
                                                             : isActive
@@ -229,7 +230,7 @@ export const Header: FunctionComponent = () => {
                                                             {resolveLocalizedText(language, tool.description)}
                                                         </span>
                                                     </span>
-                                                </button>
+                                                </Button>
                                             );
                                         })}
                                     </div>
@@ -257,14 +258,14 @@ export const Header: FunctionComponent = () => {
                             const isActive = option.value === language;
 
                             return (
-                                <button
+                                <Button
                                     key={option.value}
-                                    type="button"
+                                    variant="plain"
                                     onClick={() => {
                                         setLanguage(option.value);
                                     }}
                                     className={cn(
-                                        'flex-1 rounded-full px-3 py-1.5 text-center text-body-sm',
+                                        'flex-1 px-3 py-1.5 text-center text-body-sm',
                                         isActive
                                             ? 'bg-primary-400 text-text-a'
                                             : 'text-text-d transition hover:bg-primary-100',
@@ -272,7 +273,7 @@ export const Header: FunctionComponent = () => {
                                     aria-label={`${t('common.language')} ${option.label}`}
                                 >
                                     {option.label}
-                                </button>
+                                </Button>
                             );
                         })}
                     </div>

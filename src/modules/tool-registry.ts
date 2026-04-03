@@ -115,11 +115,11 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 90,
         slug: 'network-speed',
         href: '/network-speed',
-        badge: 'NET',
-        title: { zh: '网络测速工具', en: 'Network Probe' },
+        badge: 'PING',
+        title: { zh: 'Ping 测试', en: 'China Ping Test' },
         description: {
-            zh: '测试 IP、域名或 URL 的响应耗时、解析 IP 与采样下载速率。',
-            en: 'Measure latency, resolved IP and sampled throughput for IPs, domains or URLs.',
+            zh: '基于开源探针网络，从中国电信、联通、移动及港澳台/海外节点测试目标延迟与丢包。',
+            en: 'Measure latency and packet loss from China Telecom, Unicom, Mobile and edge probes with an open-source network.',
         },
     },
     {

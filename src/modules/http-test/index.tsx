@@ -184,8 +184,8 @@ export function HttpTestTool() {
                         </div>
 
                         <div className="inline-flex rounded-full border border-neutral-j bg-fill-b p-1">
-                            <button
-                                type="button"
+                            <Button
+                                variant="plain"
                                 className={cn(
                                     tabClassName,
                                     requestTab === 'headers'
@@ -197,9 +197,9 @@ export function HttpTestTool() {
                                 }}
                             >
                                 {t('httpTest.headers')}
-                            </button>
-                            <button
-                                type="button"
+                            </Button>
+                            <Button
+                                variant="plain"
                                 className={cn(
                                     tabClassName,
                                     requestTab === 'body'
@@ -211,7 +211,7 @@ export function HttpTestTool() {
                                 }}
                             >
                                 {t('httpTest.body')}
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
@@ -311,8 +311,8 @@ export function HttpTestTool() {
                             </div>
 
                             <div className="inline-flex w-fit rounded-full border border-neutral-j bg-fill-b p-1">
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="plain"
                                     className={cn(
                                         tabClassName,
                                         responseTab === 'body'
@@ -324,9 +324,9 @@ export function HttpTestTool() {
                                     }}
                                 >
                                     {t('httpTest.responseBody')}
-                                </button>
-                                <button
-                                    type="button"
+                                </Button>
+                                <Button
+                                    variant="plain"
                                     className={cn(
                                         tabClassName,
                                         responseTab === 'headers'
@@ -338,7 +338,7 @@ export function HttpTestTool() {
                                     }}
                                 >
                                     {t('httpTest.responseHeaders')}
-                                </button>
+                                </Button>
                             </div>
 
                             <div className="flex min-h-0 flex-1 flex-col rounded-[1.5rem] border border-neutral-j bg-fill-b p-3">

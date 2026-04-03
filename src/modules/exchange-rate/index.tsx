@@ -187,8 +187,8 @@ export function ExchangeRateConverter() {
                             />
                         </div>
 
-                        <button
-                            type="button"
+                        <Button
+                            variant="plain"
                             onClick={() => {
                                 setFromCurrency(toCurrency);
                                 setToCurrency(fromCurrency);
@@ -198,7 +198,7 @@ export function ExchangeRateConverter() {
                             title={t('exchangeRate.swap')}
                         >
                             ⇄
-                        </button>
+                        </Button>
 
                         <div>
                             <label className="text-body-sm text-text-c" htmlFor="to-currency">

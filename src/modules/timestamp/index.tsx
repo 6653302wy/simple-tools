@@ -2,7 +2,8 @@
 
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/Button';
 import { DatePicker } from '@/components/DatePicker';
 import { ModuleIntro } from '@/components/ModuleIntro';
 import { cn } from '@/libs/utils';
@@ -37,8 +38,12 @@ function parseTimestamp(rawValue: string, unit: TimestampUnit) {
     return parsed.isValid() ? parsed : null;
 }
 
-function describeRelative(value: dayjs.Dayjs, t: (key: string, variables?: Record<string, string | number>) => string) {
-    const diffMinutes = value.diff(dayjs(), 'minute');
+function describeRelative(
+    value: dayjs.Dayjs,
+    now: dayjs.Dayjs,
+    t: (key: string, variables?: Record<string, string | number>) => string,
+) {
+    const diffMinutes = value.diff(now, 'minute');
 
     if (Math.abs(diffMinutes) < 1) {
         return t('timestamp.justNow');
@@ -50,7 +55,7 @@ function describeRelative(value: dayjs.Dayjs, t: (key: string, variables?: Recor
             : t('timestamp.minutesAgo', { value: Math.abs(diffMinutes) });
     }
 
-    const diffHours = value.diff(dayjs(), 'hour');
+    const diffHours = value.diff(now, 'hour');
 
     if (Math.abs(diffHours) < 24) {
         return diffHours > 0
@@ -58,26 +63,35 @@ function describeRelative(value: dayjs.Dayjs, t: (key: string, variables?: Recor
             : t('timestamp.hoursAgo', { value: Math.abs(diffHours) });
     }
 
-    const diffDays = value.diff(dayjs(), 'day');
+    const diffDays = value.diff(now, 'day');
 
     return diffDays > 0
         ? t('timestamp.daysLater', { value: diffDays })
         : t('timestamp.daysAgo', { value: Math.abs(diffDays) });
 }
 
-export function TimestampConverter() {
+type TimestampConverterProps = {
+    initialNow: number;
+    initialTimezone: string;
+};
+
+export function TimestampConverter({ initialNow, initialTimezone }: TimestampConverterProps) {
     const { t } = useI18n();
     const [timestampUnit, setTimestampUnit] = useState<TimestampUnit>('milliseconds');
-    const [timestampInput, setTimestampInput] = useState(() => String(Date.now()));
-    const [selectedDate, setSelectedDate] = useState(() => dayjs());
+    const [timestampInput, setTimestampInput] = useState(() => String(initialNow));
+    const [selectedDate, setSelectedDate] = useState(() => dayjs(initialNow));
+    const [referenceNow, setReferenceNow] = useState(() => dayjs(initialNow));
+    const [browserTimezone, setBrowserTimezone] = useState(initialTimezone);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const timestampUnitOptions: Array<{ label: string; value: TimestampUnit }> = [
         { label: t('timestamp.milliseconds'), value: 'milliseconds' },
         { label: t('timestamp.seconds'), value: 'seconds' },
     ];
 
-    const browserTimezone =
-        typeof window === 'undefined' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    useEffect(() => {
+        setReferenceNow(dayjs());
+        setBrowserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || initialTimezone);
+    }, [initialTimezone]);
 
     const timestampDate = parseTimestamp(timestampInput, timestampUnit);
     const timestampError = timestampInput.trim() && !timestampDate ? t('timestamp.invalidTimestamp') : '';
@@ -90,15 +104,18 @@ export function TimestampConverter() {
               },
               { label: t('timestamp.utc'), value: timestampDate.utc().format('YYYY-MM-DD HH:mm:ss') },
               { label: t('timestamp.iso'), value: timestampDate.toISOString() },
-              { label: t('timestamp.relative'), value: describeRelative(timestampDate, t) },
+              { label: t('timestamp.relative'), value: describeRelative(timestampDate, referenceNow, t) },
           ]
         : [];
 
-    const dateRows = [
-        { label: t('timestamp.millisecondsTimestamp'), value: String(selectedDate.valueOf()) },
-        { label: t('timestamp.secondsTimestamp'), value: String(Math.floor(selectedDate.valueOf() / 1000)) },
-        { label: t('timestamp.utcTime'), value: selectedDate.utc().format('YYYY-MM-DD HH:mm:ss') },
-    ];
+    const dateRows = useMemo(
+        () => [
+            { label: t('timestamp.millisecondsTimestamp'), value: String(selectedDate.valueOf()) },
+            { label: t('timestamp.secondsTimestamp'), value: String(Math.floor(selectedDate.valueOf() / 1000)) },
+            { label: t('timestamp.utcTime'), value: selectedDate.utc().format('YYYY-MM-DD HH:mm:ss') },
+        ],
+        [selectedDate, t],
+    );
 
     return (
         <section className="space-y-4">
@@ -118,8 +135,8 @@ export function TimestampConverter() {
                             </p>
                         </div>
 
-                        <button
-                            type="button"
+                        <Button
+                            variant="plain"
                             onClick={() => {
                                 const currentTimestamp = Date.now();
 
@@ -129,7 +146,7 @@ export function TimestampConverter() {
                             className="shrink-0 whitespace-nowrap rounded-full border border-primary-200 bg-primary-100 px-4 py-2 text-body-sm text-primary-600 transition hover:bg-primary-200"
                         >
                             {t('timestamp.useCurrentTime')}
-                        </button>
+                        </Button>
                     </div>
 
                     <div className="mt-4">
@@ -153,9 +170,9 @@ export function TimestampConverter() {
                             const isActive = option.value === timestampUnit;
 
                             return (
-                                <button
+                                <Button
                                     key={option.value}
-                                    type="button"
+                                    variant="plain"
                                     onClick={() => {
                                         setTimestampUnit(option.value);
                                     }}
@@ -167,7 +184,7 @@ export function TimestampConverter() {
                                     )}
                                 >
                                     {option.label}
-                                </button>
+                                </Button>
                             );
                         })}
                     </div>
@@ -195,27 +212,27 @@ export function TimestampConverter() {
                             <p className="mt-1 text-body-pc-md text-text-d">{t('timestamp.toTimestampDescription')}</p>
                         </div>
 
-                        <button
-                            type="button"
+                        <Button
+                            variant="plain"
                             onClick={() => {
                                 setSelectedDate(dayjs());
                             }}
                             className="shrink-0 whitespace-nowrap rounded-full border border-auxiliary-blue bg-[rgba(0,97,186,0.08)] px-4 py-2 text-body-sm text-auxiliary-blue transition hover:bg-[rgba(0,97,186,0.14)]"
                         >
                             {t('timestamp.fillCurrentTime')}
-                        </button>
+                        </Button>
                     </div>
 
                     <div className="relative mt-4">
                         <label className="text-body-sm text-text-c" htmlFor="datetime-input">
                             {t('timestamp.localDateTime')}
                         </label>
-                        <button
+                        <Button
                             id="datetime-input"
-                            type="button"
+                            variant="secondary"
                             className={cn(
                                 inputClassName,
-                                'flex items-center justify-between text-left',
+                                'mt-2 flex items-center justify-between text-left text-body-pc-md font-normal',
                                 isDatePickerOpen && 'border-primary-400 bg-fill-a',
                             )}
                             onClick={() => {
@@ -224,7 +241,7 @@ export function TimestampConverter() {
                         >
                             <span>{formatDateTimeInput(selectedDate)}</span>
                             <span className="text-body-sm text-text-c">{browserTimezone}</span>
-                        </button>
+                        </Button>
                         <p className="mt-2 text-body-xs text-text-c">
                             {t('common.currentBrowserTimezone', { timezone: browserTimezone })}
                         </p>

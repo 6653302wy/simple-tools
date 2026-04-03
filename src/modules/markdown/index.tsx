@@ -197,18 +197,18 @@ export function MarkdownTool() {
                     />
                 </section>
 
-                <button
-                    type="button"
+                <Button
+                    variant="plain"
                     aria-label="Resize markdown panels"
                     onPointerDown={startResizing}
                     className={cn(
-                        'hidden xl:flex xl:min-h-0 xl:items-center xl:justify-center',
+                        'hidden xl:flex xl:min-h-0 xl:items-center xl:justify-center p-0',
                         'group relative cursor-col-resize bg-transparent hover:bg-primary-100/40',
                     )}
                 >
                     <span className="pointer-events-none h-full w-[2px] rounded-full bg-neutral-j transition group-hover:bg-primary-300" />
                     <span className="pointer-events-none absolute inset-y-1/2 h-10 w-2 -translate-y-1/2 rounded-full bg-primary-200/0 transition group-hover:bg-primary-200/80" />
-                </button>
+                </Button>
 
                 <section className={panelClassName}>
                     <div>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/Button';
 import { CopyButton } from '@/components/CopyButton';
 import { ModuleIntro } from '@/components/ModuleIntro';
+import { ScrollArea } from '@/components/ScrollArea';
 import { useI18n } from '@/services/i18n';
 
 const inputClassName =
@@ -195,7 +196,7 @@ export function WebSocketTestTool() {
             <ModuleIntro badge="WS" title={t('websocket.introTitle')} description={t('websocket.introDescription')} />
 
             <section className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-                <section className={`${panelClassName} flex min-h-0 flex-col`}>
+                <section className={`${panelClassName} flex min-h-0 flex-col overflow-hidden`}>
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <p className="text-title-lg text-text-e">{t('websocket.connectionTitle')}</p>
@@ -295,7 +296,7 @@ export function WebSocketTestTool() {
                     </div>
                 </section>
 
-                <section className={`${panelClassName} flex min-h-0 flex-col`}>
+                <section className={`${panelClassName} flex min-h-0 flex-col overflow-hidden`}>
                     <div className="flex items-center justify-between gap-3">
                         <div>
                             <p className="text-title-lg text-text-e">{t('websocket.logsTitle')}</p>
@@ -310,30 +311,36 @@ export function WebSocketTestTool() {
                         </div>
                     </div>
 
-                    {logs.length ? (
-                        <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-                            {logs.map((entry, index) => (
-                                <div
-                                    key={`${entry.time}-${index}`}
-                                    className={`rounded-xl border px-3 py-3 ${getLogToneClass(entry.type)}`}
-                                >
-                                    <div className="flex items-center justify-between gap-3">
-                                        <p
-                                            className={`text-body-xs uppercase tracking-[0.18em] ${getLogLabelClass(entry.type)}`}
-                                        >
-                                            {t(`websocket.${entry.type}`)}
-                                        </p>
-                                        <p className="text-body-xs text-text-c">{entry.time}</p>
+                    <div className="mt-4 h-[min(42rem,calc(100vh-22rem))] min-h-[20rem] min-w-0">
+                        {logs.length ? (
+                            <ScrollArea
+                                className="h-full rounded-xl border border-neutral-j bg-fill-b"
+                                viewportClassName="h-full"
+                                contentClassName="h-auto min-h-0 space-y-3 p-3"
+                            >
+                                {logs.map((entry, index) => (
+                                    <div
+                                        key={`${entry.time}-${index}`}
+                                        className={`rounded-xl border px-3 py-3 ${getLogToneClass(entry.type)}`}
+                                    >
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p
+                                                className={`text-body-xs uppercase tracking-[0.18em] ${getLogLabelClass(entry.type)}`}
+                                            >
+                                                {t(`websocket.${entry.type}`)}
+                                            </p>
+                                            <p className="text-body-xs text-text-c">{entry.time}</p>
+                                        </div>
+                                        <p className="mt-1.5 break-all text-body-pc-md text-text-e">{entry.message}</p>
                                     </div>
-                                    <p className="mt-1.5 break-all text-body-pc-md text-text-e">{entry.message}</p>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="mt-4 flex min-h-0 flex-1 items-center justify-center rounded-xl border border-dashed border-primary-200 bg-primary-100/40 px-4 py-8 text-center text-body-pc-md text-text-d">
-                            {t('websocket.waiting')}
-                        </div>
-                    )}
+                                ))}
+                            </ScrollArea>
+                        ) : (
+                            <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-primary-200 bg-primary-100/40 px-4 py-8 text-center text-body-pc-md text-text-d">
+                                {t('websocket.waiting')}
+                            </div>
+                        )}
+                    </div>
                 </section>
             </section>
         </section>

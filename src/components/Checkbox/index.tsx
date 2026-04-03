@@ -1,6 +1,7 @@
 'use client';
 
 import { type FC, useEffect, useState } from 'react';
+import { Button } from '@/components/Button';
 import { cn } from '@/libs/utils';
 import { Checked } from '../icons/Checked';
 import { UnChecked } from '../icons/UnChecked';
@@ -45,13 +46,14 @@ export const Checkbox: FC<Props> = ({ disabled, checked, defaultChecked, label, 
 
     return (
         <div className={cn('flex items-center gap-2', className)}>
-            <button
-                type="button"
+            <Button
+                variant="plain"
                 onClick={handleChange}
-                className={cn(disabled ? 'cursor-not-allowed' : 'cursor-pointer')}
+                disabled={disabled}
+                className={cn('gap-0 p-0', disabled ? 'cursor-not-allowed' : 'cursor-pointer')}
             >
                 {isChecked ? <Checked className="text-body-md" /> : <UnChecked className="text-body-sm" />}
-            </button>
+            </Button>
             {label && <span className="text-auxiliary text-Dark-text">{label}</span>}
         </div>
     );
