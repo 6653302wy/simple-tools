@@ -1,5 +1,3 @@
-import { HttpTestTool } from '@/modules/http-test';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function HttpTestPage() {
-    return <HttpTestTool />;
-}
+export default createLegacyToolRedirectPage('http-test');

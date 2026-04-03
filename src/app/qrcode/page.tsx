@@ -1,5 +1,3 @@
-import { QrCodeTool } from '@/modules/qrcode';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function QrCodePage() {
-    return <QrCodeTool />;
-}
+export default createLegacyToolRedirectPage('qrcode');

@@ -6,9 +6,6 @@ import duration from 'dayjs/plugin/duration';
 import timezonePlugin from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import localFont from 'next/font/local';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { Layout } from '@/Layout';
-import { I18nProvider } from '@/services/i18n';
 import { DomIdEnum, StorageEnum } from '@/services/types';
 
 dayjs.extend(duration);
@@ -44,18 +41,12 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const lang = 'zh-CN';
-    const locale = 'zh-CN';
-    const serverTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     return (
         <html
-            lang={lang}
+            lang="zh-CN"
             suppressHydrationWarning
             className={`${roboto.variable} ${inter.variable} ${rajdhani.variable}`}
             style={{ fontSize: '16px' }}
-            data-server-language={lang}
-            data-server-locale={locale}
-            data-server-timezone={serverTimezone}
         >
             <head>
                 <script
@@ -94,11 +85,7 @@ export default function RootLayout({
             <body suppressHydrationWarning>
                 {/** 业务路由容器 */}
                 <section className="relative z-10 h-screen overflow-hidden" id={DomIdEnum.AppContainer}>
-                    <I18nProvider>
-                        <ThemeProvider>
-                            <Layout>{children}</Layout>
-                        </ThemeProvider>
-                    </I18nProvider>
+                    {children}
                 </section>
             </body>
         </html>

@@ -1,5 +1,3 @@
-import { LocalNetworkTool } from '@/modules/local-network';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function LocalNetworkPage() {
-    return <LocalNetworkTool />;
-}
+export default createLegacyToolRedirectPage('local-network');

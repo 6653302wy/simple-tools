@@ -17,20 +17,16 @@ const I18nContext = createContext<I18nContextValue>({
     t: (key) => key,
 });
 
-export function I18nProvider({ children }: PropsWithChildren) {
-    const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE);
+type I18nProviderProps = PropsWithChildren<{
+    initialLanguage?: Language;
+}>;
+
+export function I18nProvider({ children, initialLanguage = DEFAULT_LANGUAGE }: I18nProviderProps) {
+    const [language, setLanguageState] = useState<Language>(initialLanguage);
 
     useEffect(() => {
-        try {
-            const storedLanguage = window.localStorage.getItem(StorageEnum.I18nLanguage);
-
-            if (isLanguage(storedLanguage)) {
-                setLanguageState(storedLanguage);
-            }
-        } catch {
-            // Ignore localStorage read issues.
-        }
-    }, []);
+        setLanguageState(initialLanguage);
+    }, [initialLanguage]);
 
     useEffect(() => {
         try {
@@ -39,13 +35,22 @@ export function I18nProvider({ children }: PropsWithChildren) {
             // Ignore localStorage write issues.
         }
 
+        document.cookie = `${StorageEnum.I18nLanguage}=${language}; path=/; max-age=31536000; samesite=lax`;
+
         document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
         document.documentElement.dataset.language = language;
     }, [language]);
 
-    const setLanguage = useCallback((nextLanguage: Language) => {
-        setLanguageState(nextLanguage);
-    }, []);
+    const setLanguage = useCallback(
+        (nextLanguage: Language) => {
+            if (!isLanguage(nextLanguage) || nextLanguage === language) {
+                return;
+            }
+
+            setLanguageState(nextLanguage);
+        },
+        [language],
+    );
 
     const t = useCallback(
         (key: string, variables?: Record<string, string | number>) => translate(language, key, variables),

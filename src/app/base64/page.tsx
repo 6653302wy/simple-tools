@@ -1,5 +1,3 @@
-import { Base64Tool } from '@/modules/base64';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function Base64Page() {
-    return <Base64Tool />;
-}
+export default createLegacyToolRedirectPage('base64');

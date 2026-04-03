@@ -1,5 +1,3 @@
-import { ExchangeRateConverter } from '@/modules/exchange-rate';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function ExchangeRatePage() {
-    return <ExchangeRateConverter />;
-}
+export default createLegacyToolRedirectPage('exchange-rate');

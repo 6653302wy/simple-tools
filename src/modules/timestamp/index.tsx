@@ -70,18 +70,13 @@ function describeRelative(
         : t('timestamp.daysAgo', { value: Math.abs(diffDays) });
 }
 
-type TimestampConverterProps = {
-    initialNow: number;
-    initialTimezone: string;
-};
-
-export function TimestampConverter({ initialNow, initialTimezone }: TimestampConverterProps) {
+export function TimestampConverter() {
     const { t } = useI18n();
     const [timestampUnit, setTimestampUnit] = useState<TimestampUnit>('milliseconds');
-    const [timestampInput, setTimestampInput] = useState(() => String(initialNow));
-    const [selectedDate, setSelectedDate] = useState(() => dayjs(initialNow));
-    const [referenceNow, setReferenceNow] = useState(() => dayjs(initialNow));
-    const [browserTimezone, setBrowserTimezone] = useState(initialTimezone);
+    const [timestampInput, setTimestampInput] = useState(() => String(Date.now()));
+    const [selectedDate, setSelectedDate] = useState(() => dayjs());
+    const [referenceNow, setReferenceNow] = useState(() => dayjs());
+    const [browserTimezone, setBrowserTimezone] = useState('UTC');
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const timestampUnitOptions: Array<{ label: string; value: TimestampUnit }> = [
         { label: t('timestamp.milliseconds'), value: 'milliseconds' },
@@ -90,8 +85,8 @@ export function TimestampConverter({ initialNow, initialTimezone }: TimestampCon
 
     useEffect(() => {
         setReferenceNow(dayjs());
-        setBrowserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || initialTimezone);
-    }, [initialTimezone]);
+        setBrowserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+    }, []);
 
     const timestampDate = parseTimestamp(timestampInput, timestampUnit);
     const timestampError = timestampInput.trim() && !timestampDate ? t('timestamp.invalidTimestamp') : '';

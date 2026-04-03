@@ -7,6 +7,7 @@ import { cn } from '@/libs/utils';
 import { toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
 import { resolveLocalizedText } from '@/services/i18n/constant';
+import { buildLocalizedHref, stripLanguagePrefix } from '@/services/i18n/routing';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 import { useNavTransition } from '@/services/useNavTransition';
 
@@ -18,6 +19,7 @@ export function Sidebar() {
     const { language } = useI18n();
     const { startTransition } = useNavTransition();
     const { confirmLeave } = useLeaveConfirm();
+    const normalizedPathname = stripLanguagePrefix(pathname);
 
     useEffect(() => {
         void pathname;
@@ -47,7 +49,7 @@ export function Sidebar() {
         >
             <nav ref={navRef} className="space-y-3">
                 {toolModules.map((tool, index) => {
-                    const isActive = pathname.startsWith(tool.href);
+                    const isActive = normalizedPathname.startsWith(tool.href);
 
                     return (
                         <button
@@ -63,7 +65,7 @@ export function Sidebar() {
 
                                 confirmLeave(() => {
                                     startTransition(() => {
-                                        router.push(tool.href);
+                                        router.push(buildLocalizedHref(language, tool.href));
                                     });
                                 });
                             }}

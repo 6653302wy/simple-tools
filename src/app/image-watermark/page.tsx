@@ -1,5 +1,3 @@
-import { ImageWatermarkTool } from '@/modules/image-watermark';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function ImageWatermarkPage() {
-    return <ImageWatermarkTool />;
-}
+export default createLegacyToolRedirectPage('image-watermark');

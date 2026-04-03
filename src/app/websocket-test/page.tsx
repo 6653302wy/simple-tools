@@ -1,5 +1,3 @@
-import { WebSocketTestTool } from '@/modules/websocket-test';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function WebSocketTestPage() {
-    return <WebSocketTestTool />;
-}
+export default createLegacyToolRedirectPage('websocket-test');

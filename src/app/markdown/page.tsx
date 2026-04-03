@@ -1,5 +1,3 @@
-import { MarkdownTool } from '@/modules/markdown';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function MarkdownPage() {
-    return <MarkdownTool />;
-}
+export default createLegacyToolRedirectPage('markdown');

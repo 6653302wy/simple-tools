@@ -1,5 +1,3 @@
-import { JsonTools } from '@/modules/json-tools';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function JsonToolsPage() {
-    return <JsonTools />;
-}
+export default createLegacyToolRedirectPage('json-tools');

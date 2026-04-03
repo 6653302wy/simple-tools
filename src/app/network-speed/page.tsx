@@ -1,5 +1,3 @@
-import { NetworkSpeedTool } from '@/modules/network-speed';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function NetworkSpeedPage() {
-    return <NetworkSpeedTool />;
-}
+export default createLegacyToolRedirectPage('network-speed');

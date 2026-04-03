@@ -1,11 +1,12 @@
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { type FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/Button';
 import { cn } from '@/libs/utils';
-import { type ToolModule, toolModules } from '@/modules/tool-registry';
+import { defaultToolHref, type ToolModule, toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
 import { LANGUAGE_OPTIONS, resolveLocalizedText } from '@/services/i18n/constant';
+import { buildLocalizedHref, stripLanguagePrefix } from '@/services/i18n/routing';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
 import { useNavTransition } from '@/services/useNavTransition';
 import { Logo } from './components/Logo';
@@ -23,6 +24,7 @@ function buildSearchIndex(tool: ToolModule) {
 /** 头部 */
 export const Header: FunctionComponent = () => {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const router = useRouter();
     const { language, setLanguage, t } = useI18n();
     const { confirmLeave } = useLeaveConfirm();
@@ -34,6 +36,7 @@ export const Header: FunctionComponent = () => {
     const [activeIndex, setActiveIndex] = useState(-1);
     const [navigationMode, setNavigationMode] = useState<'keyboard' | 'pointer'>('pointer');
     const normalizedQuery = normalizeSearchText(query);
+    const normalizedPathname = stripLanguagePrefix(pathname);
 
     const filteredTools = useMemo(() => {
         if (!normalizedQuery) {
@@ -86,14 +89,15 @@ export const Header: FunctionComponent = () => {
         setQuery('');
         setActiveIndex(-1);
         setNavigationMode('pointer');
+        const nextHref = buildLocalizedHref(language, tool.href);
 
-        if (pathname.startsWith(tool.href)) {
+        if (normalizedPathname.startsWith(tool.href)) {
             return;
         }
 
         confirmLeave(() => {
             startTransition(() => {
-                router.push(tool.href);
+                router.push(nextHref);
             });
         });
     }
@@ -101,7 +105,10 @@ export const Header: FunctionComponent = () => {
     return (
         <section className="sticky top-0 z-40 border-b border-primary-200 bg-fill-a/95 backdrop-blur">
             <section className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-                <Link href="/" className="flex shrink-0 items-center gap-3 text-text-e">
+                <Link
+                    href={buildLocalizedHref(language, defaultToolHref)}
+                    className="flex shrink-0 items-center gap-3 text-text-e"
+                >
                     <Logo />
                     <div>
                         <p className="text-body-xs uppercase tracking-[0.22em] text-primary-500">
@@ -177,7 +184,7 @@ export const Header: FunctionComponent = () => {
                                 {filteredTools.length ? (
                                     <div className="max-h-80 space-y-1 overflow-y-auto">
                                         {filteredTools.map((tool, index) => {
-                                            const isActive = pathname.startsWith(tool.href);
+                                            const isActive = normalizedPathname.startsWith(tool.href);
                                             const isHighlighted = index === activeIndex;
 
                                             return (
@@ -262,12 +269,18 @@ export const Header: FunctionComponent = () => {
                                     key={option.value}
                                     variant="plain"
                                     onClick={() => {
+                                        const currentSearch = searchParams.toString();
+                                        const nextHref = buildLocalizedHref(option.value, normalizedPathname);
+
                                         setLanguage(option.value);
+                                        startTransition(() => {
+                                            router.replace(currentSearch ? `${nextHref}?${currentSearch}` : nextHref);
+                                        });
                                     }}
                                     className={cn(
                                         'flex-1 px-3 py-1.5 text-center text-body-sm',
                                         isActive
-                                            ? 'bg-primary-400 text-text-a'
+                                            ? 'bg-primary-400 text-text-a hover:bg-primary-400 hover:text-text-a'
                                             : 'text-text-d transition hover:bg-primary-100',
                                     )}
                                     aria-label={`${t('common.language')} ${option.label}`}

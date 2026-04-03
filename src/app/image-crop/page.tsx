@@ -1,5 +1,3 @@
-import { ImageCropTool } from '@/modules/image-crop';
+import { createLegacyToolRedirectPage } from '@/app/legacy-tool-page';
 
-export default function ImageCropPage() {
-    return <ImageCropTool />;
-}
+export default createLegacyToolRedirectPage('image-crop');
