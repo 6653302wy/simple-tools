@@ -6,6 +6,8 @@ import type { CountrySummary, ProbeEntry } from '@/modules/network-speed/types';
 import { useI18n } from '@/services/i18n';
 
 const WORLD_MAP_NAME = 'network-world-map';
+const NINE_DASH_LINE_NAME = 'South China Sea Nine-Dash Line';
+const southChinaSeaRegionNames = new Set(['Paracel Islands', '西沙群岛', '西沙群島']);
 
 type NetworkGeoMapProps = {
     summaries: CountrySummary[];
@@ -39,6 +41,11 @@ type ProvinceMetric = {
     packetLoss: number;
     count: number;
     locations: string[];
+};
+type SouthChinaSeaInsetPath = {
+    id: string;
+    d: string;
+    tone: 'land' | 'dash';
 };
 
 function collectBounds(coords: number[][][] | number[][][][]) {
@@ -111,6 +118,86 @@ function sanitizeWorldFeatureCollection(collection: GeoFeatureCollection) {
             })
             .filter((feature): feature is GeoFeature => feature !== null),
     } satisfies GeoFeatureCollection;
+}
+
+function isNineDashLineFeature(feature: GeoFeature) {
+    return feature.properties.adcode === '100000_JD' || feature.properties.adchar === 'JD';
+}
+
+function buildChinaWorldFeature(collection: GeoFeatureCollection) {
+    const chinaPolygons = collection.features.filter((feature) => !isNineDashLineFeature(feature)).flatMap(toPolygons);
+
+    if (!chinaPolygons.length) {
+        return null;
+    }
+
+    return {
+        type: 'Feature',
+        geometry: {
+            type: 'MultiPolygon',
+            coordinates: chinaPolygons,
+        },
+        properties: {
+            name: 'China',
+        },
+    } satisfies GeoFeature;
+}
+
+function buildNineDashLineFeature(collection: GeoFeatureCollection) {
+    const nineDashLineFeature = collection.features.find(isNineDashLineFeature);
+
+    if (!nineDashLineFeature) {
+        return null;
+    }
+
+    return {
+        ...nineDashLineFeature,
+        properties: {
+            ...nineDashLineFeature.properties,
+            name: NINE_DASH_LINE_NAME,
+        },
+    } satisfies GeoFeature;
+}
+
+function mergeChinaFeatureCollection(
+    worldCollection: GeoFeatureCollection,
+    chinaCollection: GeoFeatureCollection | null,
+) {
+    if (!chinaCollection) {
+        return worldCollection;
+    }
+
+    const chinaFeature = buildChinaWorldFeature(chinaCollection);
+    const nineDashLineFeature = buildNineDashLineFeature(chinaCollection);
+
+    if (!chinaFeature) {
+        return worldCollection;
+    }
+
+    return {
+        type: 'FeatureCollection',
+        features: [
+            ...worldCollection.features.filter((feature) => {
+                return feature.properties.name !== 'China' && feature.properties.name !== 'Taiwan';
+            }),
+            chinaFeature,
+            ...(nineDashLineFeature ? [nineDashLineFeature] : []),
+        ],
+    } satisfies GeoFeatureCollection;
+}
+
+async function fetchDataVChinaCollection() {
+    try {
+        const response = await fetch('/maps/admin1/cn.geojson');
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return (await response.json()) as GeoFeatureCollection;
+    } catch {
+        return null;
+    }
 }
 
 function formatMs(value: number | null) {
@@ -257,6 +344,148 @@ function buildProvinceMetrics(probes: ProbeEntry[], collection: GeoFeatureCollec
     return provinceMap;
 }
 
+function findHainanFeature(collection: GeoFeatureCollection) {
+    return collection.features.find((feature) => {
+        const { adcode, name } = feature.properties;
+
+        return adcode === 460000 || name === '海南省' || name === 'Hainan';
+    });
+}
+
+function toPolygons(feature: GeoFeature) {
+    if (feature.geometry.type === 'Polygon') {
+        return [feature.geometry.coordinates as number[][][]];
+    }
+
+    return feature.geometry.coordinates as number[][][][];
+}
+
+function polygonBounds(polygon: number[][][]) {
+    return collectBounds(polygon);
+}
+
+function buildSouthChinaSeaInsetPaths(collection: GeoFeatureCollection) {
+    const hainanFeature = findHainanFeature(collection);
+    const nineDashLineFeature = buildNineDashLineFeature(collection);
+
+    if (!hainanFeature && !nineDashLineFeature) {
+        return [];
+    }
+
+    const landPolygons = hainanFeature
+        ? toPolygons(hainanFeature).filter((polygon) => {
+              const bounds = polygonBounds(polygon);
+
+              return bounds.maxLat <= 18 && bounds.minLon >= 108 && bounds.maxLon <= 119;
+          })
+        : [];
+    const dashPolygons = nineDashLineFeature ? toPolygons(nineDashLineFeature) : [];
+    const southChinaSeaPolygons = [
+        ...landPolygons.map((polygon) => ({ polygon, tone: 'land' as const })),
+        ...dashPolygons.map((polygon) => ({ polygon, tone: 'dash' as const })),
+    ];
+
+    if (!southChinaSeaPolygons.length) {
+        return [];
+    }
+
+    const insetBounds = southChinaSeaPolygons.reduce(
+        (acc, { polygon }) => {
+            const bounds = polygonBounds(polygon);
+
+            return {
+                minLon: Math.min(acc.minLon, bounds.minLon),
+                maxLon: Math.max(acc.maxLon, bounds.maxLon),
+                minLat: Math.min(acc.minLat, bounds.minLat),
+                maxLat: Math.max(acc.maxLat, bounds.maxLat),
+            };
+        },
+        {
+            minLon: Number.POSITIVE_INFINITY,
+            maxLon: Number.NEGATIVE_INFINITY,
+            minLat: Number.POSITIVE_INFINITY,
+            maxLat: Number.NEGATIVE_INFINITY,
+        },
+    );
+
+    const viewWidth = 128;
+    const viewHeight = 112;
+    const padding = 10;
+    const width = insetBounds.maxLon - insetBounds.minLon || 1;
+    const height = insetBounds.maxLat - insetBounds.minLat || 1;
+    const scale = Math.min((viewWidth - padding * 2) / width, (viewHeight - padding * 2) / height);
+    const contentWidth = width * scale;
+    const contentHeight = height * scale;
+    const offsetX = (viewWidth - contentWidth) / 2;
+    const offsetY = (viewHeight - contentHeight) / 2;
+
+    const project = ([lon, lat]: number[]) => {
+        const x = offsetX + (lon - insetBounds.minLon) * scale;
+        const y = offsetY + contentHeight - (lat - insetBounds.minLat) * scale;
+
+        return [Number(x.toFixed(2)), Number(y.toFixed(2))] as const;
+    };
+
+    return southChinaSeaPolygons.map(({ polygon, tone }, polygonIndex) => {
+        const d = polygon
+            .map((ring) =>
+                ring
+                    .map((point, pointIndex) => {
+                        const [x, y] = project(point);
+
+                        return `${pointIndex === 0 ? 'M' : 'L'}${x} ${y}`;
+                    })
+                    .join(' ')
+                    .concat(' Z'),
+            )
+            .join(' ');
+
+        return {
+            id: `south-china-sea-${polygonIndex}`,
+            d,
+            tone,
+        };
+    });
+}
+
+function SouthChinaSeaInset() {
+    const [paths, setPaths] = useState<SouthChinaSeaInsetPath[]>([]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function loadInsetData() {
+            const collection = await fetchDataVChinaCollection();
+
+            if (!cancelled) {
+                setPaths(collection ? buildSouthChinaSeaInsetPaths(collection) : []);
+            }
+        }
+
+        void loadInsetData();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    return (
+        <div className="pointer-events-none absolute right-10 bottom-14 h-28 w-32 border border-[#34AF61] bg-white/90">
+            <svg className="h-full w-full" viewBox="0 0 128 112" aria-hidden="true">
+                {paths.map((path) => (
+                    <path
+                        key={path.id}
+                        d={path.d}
+                        fill={path.tone === 'dash' ? '#222222' : '#22B520'}
+                        stroke={path.tone === 'dash' ? '#222222' : '#22B520'}
+                        strokeWidth={path.tone === 'dash' ? '0.4' : '0.8'}
+                    />
+                ))}
+            </svg>
+        </div>
+    );
+}
+
 export function NetworkGeoMap({ summaries, probes, focusCountry, countryLabels, onDrillDown }: NetworkGeoMapProps) {
     const { t, language } = useI18n();
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -267,7 +496,6 @@ export function NetworkGeoMap({ summaries, probes, focusCountry, countryLabels, 
     const summaryByMapNameRef = useRef(new Map<string, CountrySummary>());
     const countryKeyByMapNameRef = useRef(new Map<string, CountryKey>());
     const provinceFeatureCollectionsRef = useRef(new Map<string, GeoFeatureCollection>());
-    const admin1CollectionRef = useRef<GeoFeatureCollection | null>(null);
     const mapOptionRef = useRef<Record<string, unknown> | null>(null);
     const [provinceMapReadyToken, setProvinceMapReadyToken] = useState(0);
 
@@ -283,6 +511,7 @@ export function NetworkGeoMap({ summaries, probes, focusCountry, countryLabels, 
     const provinceFeatures = activeProvinceMapKey
         ? (provinceFeatureCollectionsRef.current.get(activeProvinceMapKey) ?? null)
         : null;
+    const showSouthChinaSeaInset = focusCountry === 'cn' && Boolean(provinceFeatures);
     const provinceMetrics = useMemo(() => {
         if (!focusCountry || !provinceFeatures) {
             return new Map<string, ProvinceMetric>();
@@ -299,10 +528,75 @@ export function NetworkGeoMap({ summaries, probes, focusCountry, countryLabels, 
             name: networkCountryMap[summary.key].mapName,
             value: resolveVisualValue(summary.avgMs, summary.packetLossAlerts > 0 ? 1 : 0),
         }));
+        const worldMapData = focusCountry
+            ? worldSeriesData
+            : [
+                  ...worldSeriesData,
+                  {
+                      name: NINE_DASH_LINE_NAME,
+                      value: -1,
+                      itemStyle: {
+                          areaColor: '#222222',
+                          borderColor: '#222222',
+                      },
+                      emphasis: {
+                          itemStyle: {
+                              areaColor: '#222222',
+                          },
+                      },
+                  },
+              ];
         const provinceSeriesData = Array.from(provinceMetrics.values()).map((metric) => ({
             name: metric.name,
             value: resolveVisualValue(metric.avgMs, metric.packetLoss),
         }));
+        const provinceSeriesNameSet = new Set(provinceSeriesData.map((item) => item.name));
+        const provinceFallbackData =
+            focusCountry && provinceFeatures
+                ? provinceFeatures.features
+                      .map((feature) => {
+                          const name = typeof feature.properties.name === 'string' ? feature.properties.name : null;
+
+                          if (!name || provinceSeriesNameSet.has(name)) {
+                              return null;
+                          }
+
+                          return {
+                              name,
+                              value: -1,
+                          };
+                      })
+                      .filter((item): item is { name: string; value: number } => item !== null)
+                : [];
+        const focusedRegionStyles =
+            focusCountry === 'cn' && provinceFeatures
+                ? Array.from(southChinaSeaRegionNames).map((name) => ({
+                      name,
+                      itemStyle: {
+                          areaColor: '#F7FAF8',
+                          borderColor: '#34AF61',
+                          borderWidth: 1.6,
+                      },
+                  }))
+                : [];
+        const regionStyles = [
+            ...focusedRegionStyles,
+            {
+                name: NINE_DASH_LINE_NAME,
+                itemStyle: {
+                    areaColor: '#222222',
+                    borderColor: '#222222',
+                },
+                emphasis: {
+                    itemStyle: {
+                        areaColor: '#222222',
+                    },
+                },
+                select: {
+                    disabled: true,
+                },
+            },
+        ];
 
         return {
             backgroundColor: 'transparent',
@@ -409,7 +703,11 @@ export function NetworkGeoMap({ summaries, probes, focusCountry, countryLabels, 
                         fontSize: 10,
                         color: '#627086',
                     },
-                    data: focusCountry && provinceFeatures ? provinceSeriesData : worldSeriesData,
+                    regions: regionStyles,
+                    data:
+                        focusCountry && provinceFeatures
+                            ? [...provinceFallbackData, ...provinceSeriesData]
+                            : worldMapData,
                 },
             ],
         } satisfies Record<string, unknown>;
@@ -449,24 +747,23 @@ export function NetworkGeoMap({ summaries, probes, focusCountry, countryLabels, 
             const { TooltipComponent, VisualMapComponent } = await import('echarts/components');
             const { CanvasRenderer } = await import('echarts/renderers');
             const worldAtlas = (await import('world-atlas/countries-110m.json')).default as Record<string, unknown>;
-            const admin1Collection = (await import('geojson-places/data/states/admin1.json'))
-                .default as GeoFeatureCollection;
             const { feature } = await import('topojson-client');
+            const datavChinaCollection = await fetchDataVChinaCollection();
 
             if (cancelled || !containerRef.current) {
                 return;
             }
 
-            admin1CollectionRef.current = admin1Collection;
             echarts.use([MapChart, TooltipComponent, VisualMapComponent, CanvasRenderer]);
 
             if (!registeredMapsRef.current.has(WORLD_MAP_NAME)) {
-                const worldFeature = sanitizeWorldFeatureCollection(
+                const baseWorldFeature = sanitizeWorldFeatureCollection(
                     feature(
                         worldAtlas as never,
                         (worldAtlas.objects as { countries: unknown }).countries as never,
                     ) as unknown as GeoFeatureCollection,
                 );
+                const worldFeature = mergeChinaFeatureCollection(baseWorldFeature, datavChinaCollection);
 
                 echarts.registerMap(WORLD_MAP_NAME, worldFeature as never);
                 registeredMapsRef.current.add(WORLD_MAP_NAME);
@@ -514,47 +811,66 @@ export function NetworkGeoMap({ summaries, probes, focusCountry, countryLabels, 
     }, []);
 
     useEffect(() => {
-        if (
-            !focusCountry ||
-            !admin1CollectionRef.current ||
-            !activeProvinceMapKey ||
-            provinceFeatureCollectionsRef.current.has(activeProvinceMapKey)
-        ) {
+        if (!focusCountry || !activeProvinceMapKey || provinceFeatureCollectionsRef.current.has(activeProvinceMapKey)) {
             return;
         }
 
-        const echartsPromise = import('echarts/core');
-        void echartsPromise.then((echarts) => {
-            const provinceCollection = buildProvinceFeatureCollection(
-                admin1CollectionRef.current as GeoFeatureCollection,
-                focusCountry,
-                language,
-            );
+        const countryKey = focusCountry;
+        const provinceMapKey = activeProvinceMapKey;
+        let cancelled = false;
 
-            if (!provinceCollection.features.length) {
-                return;
+        async function loadProvinceMap() {
+            try {
+                const [echarts, response] = await Promise.all([
+                    import('echarts/core'),
+                    fetch(`/maps/admin1/${countryKey}.json`),
+                ]);
+
+                if (cancelled || !response.ok) {
+                    return;
+                }
+
+                const sourceCollection = (await response.json()) as GeoFeatureCollection;
+                const provinceCollection = buildProvinceFeatureCollection(sourceCollection, countryKey, language);
+
+                if (cancelled || !provinceCollection.features.length) {
+                    return;
+                }
+
+                provinceFeatureCollectionsRef.current.set(provinceMapKey, provinceCollection);
+
+                if (!registeredMapsRef.current.has(provinceMapKey)) {
+                    echarts.registerMap(provinceMapKey, provinceCollection as never);
+                    registeredMapsRef.current.add(provinceMapKey);
+                }
+
+                setProvinceMapReadyToken((value) => value + 1);
+            } catch {
+                // Keep the current map visible if a country asset fails to load.
             }
+        }
 
-            provinceFeatureCollectionsRef.current.set(activeProvinceMapKey, provinceCollection);
+        void loadProvinceMap();
 
-            if (!registeredMapsRef.current.has(activeProvinceMapKey)) {
-                echarts.registerMap(activeProvinceMapKey, provinceCollection as never);
-                registeredMapsRef.current.add(activeProvinceMapKey);
-            }
-
-            setProvinceMapReadyToken((value) => value + 1);
-        });
+        return () => {
+            cancelled = true;
+        };
     }, [activeProvinceMapKey, focusCountry, language]);
 
     useEffect(() => {
         void provinceMapReadyToken;
 
-        if (focusCountry && activeProvinceMapKey && !provinceFeatures && admin1CollectionRef.current) {
+        if (focusCountry && activeProvinceMapKey && !provinceFeatures) {
             return;
         }
 
         (chartRef.current as EChartsInstanceLike | null)?.setOption(mapOption, true);
     }, [activeProvinceMapKey, focusCountry, mapOption, provinceFeatures, provinceMapReadyToken]);
 
-    return <div ref={containerRef} className="h-[34rem] w-full overflow-hidden rounded-[2rem]" />;
+    return (
+        <div className="relative h-[34rem] w-full overflow-hidden rounded-[2rem]">
+            <div ref={containerRef} className="h-full w-full" />
+            {showSouthChinaSeaInset ? <SouthChinaSeaInset /> : null}
+        </div>
+    );
 }

@@ -14,7 +14,6 @@
         "cropperjs": "^1.6.2",
         "dayjs": "^1.11.20",
         "echarts": "^6.0.0",
-        "geojson-places": "^1.0.8",
         "i18next": "^25.10.10",
         "jsqr": "^1.4.0",
         "marked": "^17.0.5",
