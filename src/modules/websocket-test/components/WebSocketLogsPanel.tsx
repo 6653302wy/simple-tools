@@ -30,7 +30,7 @@ export function WebSocketLogsPanel({ logs, logText, onClear }: WebSocketLogsPane
             }
             bodyClassName="min-h-0 flex-1 p-4 pt-0"
         >
-            <div className="h-[min(42rem,calc(100vh-22rem))] min-h-[20rem] min-w-0">
+            <div className="h-[min(34rem,calc(100vh-26rem))] min-h-[16rem] min-w-0">
                 {logs.length ? (
                     <ScrollArea
                         className="h-full rounded-xl border border-neutral-j bg-fill-b"

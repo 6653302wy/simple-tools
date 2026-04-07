@@ -1,6 +1,13 @@
 import net from 'node:net';
 import { performance } from 'node:perf_hooks';
 import type { NextRequest } from 'next/server';
+import {
+    type CountryKey,
+    isCountryKey,
+    networkCountries,
+    networkCountryCodeMap,
+    networkCountryMap,
+} from '@/modules/network-speed/countries';
 import { isLanguage } from '@/services/i18n/constant';
 import { translate } from '@/services/i18n/messages';
 
@@ -12,22 +19,10 @@ const GLOBALPING_POLL_INTERVAL_MS = 1400;
 const GLOBALPING_POLL_TIMEOUT_MS = 16000;
 const DEFAULT_PACKET_COUNT = 3;
 
-type RequestedCarrierKey = 'telecom' | 'unicom' | 'mobile' | 'edge';
-type CarrierKey = RequestedCarrierKey | 'other';
-type ZoneKey = 'china' | 'edge';
-type RegionKey =
-    | 'north'
-    | 'east'
-    | 'south'
-    | 'central'
-    | 'southwest'
-    | 'northwest'
-    | 'northeast'
-    | 'hkmo_tw'
-    | 'overseas';
-
 type GlobalpingLocation = {
-    magic: string;
+    city?: string;
+    country?: string;
+    magic?: string;
     limit: number;
 };
 
@@ -38,7 +33,6 @@ type GlobalpingMeasurementResponse = {
     updatedAt: string;
     target: string;
     probesCount: number;
-    locations: Array<GlobalpingLocation>;
     results: GlobalpingProbeResult[];
 };
 
@@ -53,13 +47,10 @@ type GlobalpingProbeResult = {
         longitude?: number | null;
         latitude?: number | null;
         network?: string | null;
-        resolvers?: string[] | null;
     };
     result?: {
         status?: string | null;
-        rawOutput?: string | null;
         resolvedAddress?: string | null;
-        resolvedHostname?: string | null;
         timings?: Array<{
             ttl?: number;
             rtt?: number;
@@ -68,22 +59,17 @@ type GlobalpingProbeResult = {
             min?: number;
             max?: number;
             avg?: number;
-            total?: number;
             loss?: number;
-            rcv?: number;
-            drop?: number;
         } | null;
     };
 };
 
 type ProbeEntry = {
     id: string;
-    zone: ZoneKey;
-    carrierKey: CarrierKey;
-    carrierLabel: string;
-    regionKey: RegionKey;
+    countryKey: CountryKey | 'other';
     countryCode: string;
     city: string;
+    state: string | null;
     locationLabel: string;
     network: string;
     asn: number | null;
@@ -98,9 +84,8 @@ type ProbeEntry = {
     timingsCount: number;
 };
 
-type AggregateEntry = {
-    key: string;
-    zone: ZoneKey;
+type CountrySummary = {
+    key: CountryKey;
     count: number;
     pending: number;
     packetLossAlerts: number;
@@ -108,47 +93,6 @@ type AggregateEntry = {
     fastestLabel: string;
     slowestLabel: string;
 };
-
-const carrierLocations: Record<RequestedCarrierKey, GlobalpingLocation[]> = {
-    telecom: [{ magic: 'North America', limit: 3 }],
-    unicom: [{ magic: 'Europe', limit: 3 }],
-    mobile: [{ magic: 'Asia', limit: 3 }],
-    edge: [
-        { magic: 'Oceania', limit: 2 },
-        { magic: 'South America', limit: 1 },
-        { magic: 'Africa', limit: 1 },
-    ],
-};
-const northAmericaCountryCodes = new Set(['US', 'CA', 'MX']);
-const middleEastCountryCodes = new Set(['AE', 'SA', 'QA', 'KW', 'OM', 'BH', 'IL', 'JO', 'LB', 'IQ']);
-
-function normalizeContinent(continent: string | null | undefined) {
-    return continent?.trim().toUpperCase() ?? '';
-}
-
-function isNorthAmericaContinent(continent: string) {
-    return continent === 'NA' || continent === 'NORTH AMERICA';
-}
-
-function isEuropeContinent(continent: string) {
-    return continent === 'EU' || continent === 'EUROPE';
-}
-
-function isAsiaContinent(continent: string) {
-    return continent === 'AS' || continent === 'ASIA';
-}
-
-function isOceaniaContinent(continent: string) {
-    return continent === 'OC' || continent === 'OCEANIA';
-}
-
-function isSouthAmericaContinent(continent: string) {
-    return continent === 'SA' || continent === 'SOUTH AMERICA';
-}
-
-function isAfricaContinent(continent: string) {
-    return continent === 'AF' || continent === 'AFRICA';
-}
 
 function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -186,102 +130,43 @@ function normalizeTarget(target: string) {
     return /^[a-z0-9.-]+$/i.test(trimmedTarget) ? trimmedTarget : null;
 }
 
-function buildLocations(requestedCarriers: RequestedCarrierKey[]) {
-    return requestedCarriers.flatMap((carrierKey) => carrierLocations[carrierKey]);
-}
-
-function parseRequestedCarriers(value: unknown) {
+function parseRequestedCountries(value: unknown) {
     if (!Array.isArray(value)) {
-        return ['telecom', 'unicom', 'mobile', 'edge'] satisfies RequestedCarrierKey[];
+        return networkCountries.map((country) => country.key);
     }
 
-    const allowed = new Set<RequestedCarrierKey>(['telecom', 'unicom', 'mobile', 'edge']);
-    const requested = value.filter((item): item is RequestedCarrierKey => {
-        return typeof item === 'string' && allowed.has(item as RequestedCarrierKey);
+    const requested = value.filter((item): item is CountryKey => typeof item === 'string' && isCountryKey(item));
+
+    return requested.length ? requested : networkCountries.map((country) => country.key);
+}
+
+function buildLocations(requestedCountries: CountryKey[], focusCountry: CountryKey | null) {
+    const countries = focusCountry ? [focusCountry] : requestedCountries;
+
+    return countries.flatMap((countryKey) => {
+        const country = networkCountryMap[countryKey];
+        const locations = focusCountry === countryKey ? country.drillLocations : country.overviewLocations;
+
+        return locations.map((location) => ({
+            city: location.city,
+            country: location.country,
+            limit: location.limit ?? 1,
+        })) satisfies GlobalpingLocation[];
     });
-
-    return requested.length ? requested : (['telecom', 'unicom', 'mobile', 'edge'] satisfies RequestedCarrierKey[]);
 }
 
-function resolveCarrier(probe: GlobalpingProbeResult['probe']) {
-    const countryCode = probe?.country ?? '';
-    const continent = normalizeContinent(probe?.continent);
-
-    if (isNorthAmericaContinent(continent) || northAmericaCountryCodes.has(countryCode)) {
-        return {
-            zone: 'china' as const,
-            carrierKey: 'telecom' as const,
-            carrierLabel: 'North America',
-        };
+function resolveCountryKey(countryCode: string | null | undefined) {
+    if (!countryCode) {
+        return 'other' as const;
     }
 
-    if (isEuropeContinent(continent)) {
-        return {
-            zone: 'china' as const,
-            carrierKey: 'unicom' as const,
-            carrierLabel: 'Europe',
-        };
-    }
-
-    if (isAsiaContinent(continent) && !middleEastCountryCodes.has(countryCode)) {
-        return {
-            zone: 'china' as const,
-            carrierKey: 'mobile' as const,
-            carrierLabel: 'Asia Pacific',
-        };
-    }
-
-    return {
-        zone: 'edge' as const,
-        carrierKey: 'edge' as const,
-        carrierLabel: 'Extended Regions',
-    };
-}
-
-function resolveRegion(probe: GlobalpingProbeResult['probe']) {
-    const countryCode = probe?.country ?? '';
-    const continent = normalizeContinent(probe?.continent);
-
-    if (isNorthAmericaContinent(continent) || northAmericaCountryCodes.has(countryCode)) {
-        return 'north' satisfies RegionKey;
-    }
-
-    if (isEuropeContinent(continent)) {
-        return 'east' satisfies RegionKey;
-    }
-
-    if (middleEastCountryCodes.has(countryCode)) {
-        return 'northeast' satisfies RegionKey;
-    }
-
-    if (isAsiaContinent(continent)) {
-        return 'south' satisfies RegionKey;
-    }
-
-    if (isOceaniaContinent(continent)) {
-        return 'central' satisfies RegionKey;
-    }
-
-    if (isSouthAmericaContinent(continent)) {
-        return 'southwest' satisfies RegionKey;
-    }
-
-    if (isAfricaContinent(continent)) {
-        return 'northwest' satisfies RegionKey;
-    }
-
-    if (countryCode === 'SG' || countryCode === 'HK' || countryCode === 'JP') {
-        return 'hkmo_tw' satisfies RegionKey;
-    }
-
-    return 'overseas';
+    return networkCountryCodeMap[countryCode] ?? ('other' as const);
 }
 
 function resolveLocationLabel(probe: GlobalpingProbeResult['probe']) {
-    const city = probe?.city?.trim();
-    const countryCode = probe?.country?.trim();
-    const network = probe?.network?.trim();
-    const parts = [city, countryCode, network].filter(Boolean);
+    const parts = [probe?.city?.trim(), probe?.state?.trim(), probe?.country?.trim(), probe?.network?.trim()].filter(
+        Boolean,
+    );
 
     return parts.join(' · ');
 }
@@ -289,17 +174,15 @@ function resolveLocationLabel(probe: GlobalpingProbeResult['probe']) {
 function normalizeProbeResult(item: GlobalpingProbeResult, index: number): ProbeEntry {
     const probe = item.probe;
     const result = item.result;
-    const carrier = resolveCarrier(probe);
     const stats = result?.stats;
+    const countryCode = probe?.country ?? '';
 
     return {
-        id: `${probe?.country ?? 'unknown'}-${probe?.city ?? 'probe'}-${index}`,
-        zone: carrier.zone,
-        carrierKey: carrier.carrierKey,
-        carrierLabel: carrier.carrierLabel,
-        regionKey: resolveRegion(probe),
-        countryCode: probe?.country ?? '',
+        id: `${countryCode || 'unknown'}-${probe?.city ?? 'probe'}-${index}`,
+        countryKey: resolveCountryKey(countryCode),
+        countryCode,
         city: probe?.city ?? 'Unknown',
+        state: probe?.state ?? null,
         locationLabel: resolveLocationLabel(probe),
         network: probe?.network ?? '',
         asn: probe?.asn ?? null,
@@ -315,22 +198,10 @@ function normalizeProbeResult(item: GlobalpingProbeResult, index: number): Probe
     };
 }
 
-function buildAggregateEntries(entries: ProbeEntry[], zone: ZoneKey, groupBy: 'carrierKey' | 'regionKey') {
-    const aggregateMap = new Map<string, ProbeEntry[]>();
-
-    for (const entry of entries) {
-        if (entry.zone !== zone) {
-            continue;
-        }
-
-        const key = entry[groupBy];
-        const currentEntries = aggregateMap.get(key) ?? [];
-        currentEntries.push(entry);
-        aggregateMap.set(key, currentEntries);
-    }
-
-    return Array.from(aggregateMap.entries())
-        .map(([key, items]) => {
+function buildCountrySummaries(probes: ProbeEntry[]) {
+    return networkCountries
+        .map((country) => {
+            const items = probes.filter((probe) => probe.countryKey === country.key);
             const completedItems = items.filter((item) => item.avgMs !== null && item.status === 'finished');
             const sortedCompletedItems = [...completedItems].sort((previousItem, nextItem) => {
                 return (previousItem.avgMs ?? Number.POSITIVE_INFINITY) - (nextItem.avgMs ?? Number.POSITIVE_INFINITY);
@@ -340,8 +211,7 @@ function buildAggregateEntries(entries: ProbeEntry[], zone: ZoneKey, groupBy: 'c
                 .filter((value): value is number => value !== null && Number.isFinite(value));
 
             return {
-                key,
-                zone,
+                key: country.key,
                 count: items.length,
                 pending: items.filter((item) => item.status !== 'finished').length,
                 packetLossAlerts: items.filter((item) => item.packetLoss > 0).length,
@@ -350,14 +220,15 @@ function buildAggregateEntries(entries: ProbeEntry[], zone: ZoneKey, groupBy: 'c
                     : null,
                 fastestLabel: sortedCompletedItems[0]?.locationLabel ?? '--',
                 slowestLabel: sortedCompletedItems.at(-1)?.locationLabel ?? '--',
-            } satisfies AggregateEntry;
+            } satisfies CountrySummary;
         })
+        .filter((summary) => summary.count > 0)
         .sort((previousRow, nextRow) => {
             return (previousRow.avgMs ?? Number.POSITIVE_INFINITY) - (nextRow.avgMs ?? Number.POSITIVE_INFINITY);
         });
 }
 
-async function createMeasurement(target: string, requestedCarriers: RequestedCarrierKey[]) {
+async function createMeasurement(target: string, requestedCountries: CountryKey[], focusCountry: CountryKey | null) {
     const response = await fetch(`${GLOBALPING_BASE_URL}/measurements`, {
         method: 'POST',
         headers: {
@@ -368,7 +239,7 @@ async function createMeasurement(target: string, requestedCarriers: RequestedCar
         body: JSON.stringify({
             target,
             type: 'ping',
-            locations: buildLocations(requestedCarriers),
+            locations: buildLocations(requestedCountries, focusCountry),
             measurementOptions: {
                 packets: DEFAULT_PACKET_COUNT,
             },
@@ -416,9 +287,13 @@ function buildResponsePayload(
     input: string,
     normalizedTarget: string,
     measurement: GlobalpingMeasurementResponse,
-    requestedCarriers: RequestedCarrierKey[],
+    requestedCountries: CountryKey[],
+    focusCountry: CountryKey | null,
 ) {
-    const requestedCount = buildLocations(requestedCarriers).reduce((total, location) => total + location.limit, 0);
+    const requestedCount = buildLocations(requestedCountries, focusCountry).reduce(
+        (total, location) => total + location.limit,
+        0,
+    );
     const probes = measurement.results.map((item, index) => normalizeProbeResult(item, index));
     const completedCount = probes.filter((probe) => probe.status === 'finished').length;
     const progressPercent =
@@ -441,11 +316,6 @@ function buildResponsePayload(
         }))
         .sort((previousItem, nextItem) => nextItem.count - previousItem.count);
 
-    const chinaCarrierRows = buildAggregateEntries(probes, 'china', 'carrierKey').filter(
-        (entry) => entry.key !== 'other',
-    );
-    const chinaRegionRows = buildAggregateEntries(probes, 'china', 'regionKey');
-    const edgeRegionRows = buildAggregateEntries(probes, 'edge', 'regionKey');
     const averageValues = probes
         .map((probe) => probe.avgMs)
         .filter((value): value is number => value !== null && Number.isFinite(value));
@@ -457,6 +327,8 @@ function buildResponsePayload(
         measurementStatus: measurement.status,
         createdAt: measurement.createdAt,
         updatedAt: measurement.updatedAt,
+        focusCountry,
+        requestedCountries,
         shareUrl: `https://globalping.io/?measurement=${measurement.id}`,
         source: {
             name: 'Globalping',
@@ -474,11 +346,7 @@ function buildResponsePayload(
                 ? averageValues.reduce((total, currentValue) => total + currentValue, 0) / averageValues.length
                 : null,
         },
-        summary: {
-            chinaCarriers: chinaCarrierRows,
-            chinaRegions: chinaRegionRows,
-            edgeRegions: edgeRegionRows,
-        },
+        countries: buildCountrySummaries(probes),
         ipDistribution,
         probes,
     };
@@ -488,30 +356,34 @@ export async function POST(request: NextRequest) {
     const payload = (await request.json().catch(() => null)) as {
         language?: string;
         target?: string;
-        carriers?: RequestedCarrierKey[];
+        countries?: CountryKey[];
+        focusCountry?: CountryKey | null;
     } | null;
     const language = isLanguage(payload?.language) ? payload.language : 'zh';
     const input = payload?.target?.trim() ?? '';
     const normalizedTarget = normalizeTarget(input);
-    const requestedCarriers = parseRequestedCarriers(payload?.carriers);
+    const requestedCountries = parseRequestedCountries(payload?.countries);
+    const focusCountry = isCountryKey(payload?.focusCountry ?? null) ? (payload?.focusCountry ?? null) : null;
 
     if (!normalizedTarget) {
         return Response.json({ message: translate(language, 'api.globalPingMissingTarget') }, { status: 400 });
     }
 
-    if (!requestedCarriers.length) {
+    if (!requestedCountries.length && !focusCountry) {
         return Response.json({ message: translate(language, 'api.globalPingMissingCarrier') }, { status: 400 });
     }
 
     try {
-        const createdMeasurement = await createMeasurement(normalizedTarget, requestedCarriers);
+        const createdMeasurement = await createMeasurement(normalizedTarget, requestedCountries, focusCountry);
         const measurement = await waitForMeasurement(createdMeasurement.id);
 
         if (!measurement) {
             throw new Error(translate(language, 'api.globalPingTimeout'));
         }
 
-        return Response.json(buildResponsePayload(input, normalizedTarget, measurement, requestedCarriers));
+        return Response.json(
+            buildResponsePayload(input, normalizedTarget, measurement, requestedCountries, focusCountry),
+        );
     } catch (error) {
         const message =
             error instanceof Error && error.message ? error.message : translate(language, 'api.globalPingFailed');

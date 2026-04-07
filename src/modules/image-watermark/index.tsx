@@ -10,6 +10,9 @@ import { useI18n } from '@/services/i18n';
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
+const rangeInputClassName = 'mt-1 w-full';
+const rangeHeaderClassName = 'flex items-center justify-between gap-3 text-body-sm';
+const rangeValueClassName = 'shrink-0 text-body-sm text-text-d';
 
 type WatermarkMode = 'tile' | 'corner';
 
@@ -60,7 +63,8 @@ export function ImageWatermarkTool() {
     const [color, setColor] = useState('#003616');
     const [fontSize, setFontSize] = useState(36);
     const [opacity, setOpacity] = useState(0.22);
-    const [gap, setGap] = useState(120);
+    const [lineGap, setLineGap] = useState(120);
+    const [inlineGap, setInlineGap] = useState(120);
     const [rotation, setRotation] = useState(-24);
     const [mode, setMode] = useState<WatermarkMode>('tile');
 
@@ -132,8 +136,8 @@ export function ImageWatermarkTool() {
                     context.textAlign = 'left';
                     context.textBaseline = 'top';
 
-                    const horizontalStep = textMetrics.width + gap;
-                    const verticalStep = textMetrics.height + gap;
+                    const horizontalStep = textMetrics.width + inlineGap;
+                    const verticalStep = textMetrics.height + lineGap;
 
                     for (
                         let x = -canvas.width - textMetrics.width;
@@ -190,7 +194,7 @@ export function ImageWatermarkTool() {
         return () => {
             cancelled = true;
         };
-    }, [color, fontSize, gap, mode, opacity, rotation, sourceImage, t, watermarkText]);
+    }, [color, fontSize, inlineGap, lineGap, mode, opacity, rotation, sourceImage, t, watermarkText]);
 
     async function handleFilesSelect(files: FileList) {
         const file = files[0];
@@ -275,7 +279,7 @@ export function ImageWatermarkTool() {
                             </p>
                         </div>
 
-                        <div className="mt-4 grid gap-4">
+                        <div className="mt-3 grid gap-3">
                             <div>
                                 <label className="text-body-sm text-text-c" htmlFor="watermark-text">
                                     {t('imageWatermark.watermarkText')}
@@ -291,7 +295,7 @@ export function ImageWatermarkTool() {
                                 />
                             </div>
 
-                            <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-x-3 gap-y-4 md:grid-cols-2">
                                 <div>
                                     <label className="text-body-sm text-text-c">{t('imageWatermark.mode')}</label>
                                     <Select
@@ -323,9 +327,12 @@ export function ImageWatermarkTool() {
                                 </div>
 
                                 <div>
-                                    <label className="text-body-sm text-text-c" htmlFor="watermark-font-size">
-                                        {t('imageWatermark.fontSize')}
-                                    </label>
+                                    <div className={rangeHeaderClassName}>
+                                        <label className="text-text-c" htmlFor="watermark-font-size">
+                                            {t('imageWatermark.fontSize')}
+                                        </label>
+                                        <span className={rangeValueClassName}>{fontSize}px</span>
+                                    </div>
                                     <input
                                         id="watermark-font-size"
                                         type="range"
@@ -335,15 +342,17 @@ export function ImageWatermarkTool() {
                                         onChange={(event) => {
                                             setFontSize(Number(event.target.value));
                                         }}
-                                        className="mt-3 w-full"
+                                        className={rangeInputClassName}
                                     />
-                                    <p className="mt-1 text-body-sm text-text-d">{fontSize}px</p>
                                 </div>
 
                                 <div>
-                                    <label className="text-body-sm text-text-c" htmlFor="watermark-opacity">
-                                        {t('imageWatermark.opacity')}
-                                    </label>
+                                    <div className={rangeHeaderClassName}>
+                                        <label className="text-text-c" htmlFor="watermark-opacity">
+                                            {t('imageWatermark.opacity')}
+                                        </label>
+                                        <span className={rangeValueClassName}>{Math.round(opacity * 100)}%</span>
+                                    </div>
                                     <input
                                         id="watermark-opacity"
                                         type="range"
@@ -353,15 +362,17 @@ export function ImageWatermarkTool() {
                                         onChange={(event) => {
                                             setOpacity(Number(event.target.value) / 100);
                                         }}
-                                        className="mt-3 w-full"
+                                        className={rangeInputClassName}
                                     />
-                                    <p className="mt-1 text-body-sm text-text-d">{Math.round(opacity * 100)}%</p>
                                 </div>
 
                                 <div>
-                                    <label className="text-body-sm text-text-c" htmlFor="watermark-rotation">
-                                        {t('imageWatermark.rotation')}
-                                    </label>
+                                    <div className={rangeHeaderClassName}>
+                                        <label className="text-text-c" htmlFor="watermark-rotation">
+                                            {t('imageWatermark.rotation')}
+                                        </label>
+                                        <span className={rangeValueClassName}>{rotation}°</span>
+                                    </div>
                                     <input
                                         id="watermark-rotation"
                                         type="range"
@@ -371,29 +382,52 @@ export function ImageWatermarkTool() {
                                         onChange={(event) => {
                                             setRotation(Number(event.target.value));
                                         }}
-                                        className="mt-3 w-full"
+                                        className={rangeInputClassName}
                                     />
-                                    <p className="mt-1 text-body-sm text-text-d">{rotation}°</p>
                                 </div>
                             </div>
 
                             {mode === 'tile' && (
-                                <div>
-                                    <label className="text-body-sm text-text-c" htmlFor="watermark-gap">
-                                        {t('imageWatermark.gap')}
-                                    </label>
-                                    <input
-                                        id="watermark-gap"
-                                        type="range"
-                                        min={70}
-                                        max={220}
-                                        value={clamp(gap, 70, 220)}
-                                        onChange={(event) => {
-                                            setGap(Number(event.target.value));
-                                        }}
-                                        className="mt-3 w-full"
-                                    />
-                                    <p className="mt-1 text-body-sm text-text-d">{gap}px</p>
+                                <div className="grid gap-x-3 gap-y-4 md:grid-cols-2">
+                                    <div>
+                                        <div className={rangeHeaderClassName}>
+                                            <label className="text-text-c" htmlFor="watermark-line-gap">
+                                                {t('imageWatermark.gap')}
+                                            </label>
+                                            <span className={rangeValueClassName}>{lineGap}px</span>
+                                        </div>
+                                        <input
+                                            id="watermark-line-gap"
+                                            type="range"
+                                            min={70}
+                                            max={220}
+                                            value={clamp(lineGap, 70, 220)}
+                                            onChange={(event) => {
+                                                setLineGap(Number(event.target.value));
+                                            }}
+                                            className={rangeInputClassName}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <div className={rangeHeaderClassName}>
+                                            <label className="text-text-c" htmlFor="watermark-inline-gap">
+                                                {t('imageWatermark.inlineGap')}
+                                            </label>
+                                            <span className={rangeValueClassName}>{inlineGap}px</span>
+                                        </div>
+                                        <input
+                                            id="watermark-inline-gap"
+                                            type="range"
+                                            min={40}
+                                            max={260}
+                                            value={clamp(inlineGap, 40, 260)}
+                                            onChange={(event) => {
+                                                setInlineGap(Number(event.target.value));
+                                            }}
+                                            className={rangeInputClassName}
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -414,7 +448,7 @@ export function ImageWatermarkTool() {
 
                     <div>
                         <p className="text-body-sm text-text-c">{t('imageWatermark.resultPreview')}</p>
-                        <div className="mt-2 flex min-h-80 items-center justify-center rounded-2xl border border-dashed border-primary-200 bg-fill-b p-4">
+                        <div className="mt-2 flex min-h-64 items-center justify-center rounded-2xl border border-dashed border-primary-200 bg-fill-b p-4">
                             {error ? (
                                 <p className="text-body-pc-md text-error">{error}</p>
                             ) : (
@@ -422,7 +456,7 @@ export function ImageWatermarkTool() {
                                     <canvas
                                         ref={previewCanvasRef}
                                         className={
-                                            hasResult ? 'max-h-[34rem] w-full rounded-xl object-contain' : 'hidden'
+                                            hasResult ? 'max-h-[26rem] w-full rounded-xl object-contain' : 'hidden'
                                         }
                                     />
                                     {!hasResult && (
