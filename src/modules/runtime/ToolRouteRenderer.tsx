@@ -21,6 +21,10 @@ async function renderToolComponent(slug: ToolModuleSlug, language: Language) {
             const { ImageWatermarkTool } = await import('@/modules/image-watermark');
             return <ImageWatermarkTool />;
         }
+        case 'image-unwatermark': {
+            const { ImageUnwatermarkTool } = await import('@/modules/image-unwatermark');
+            return <ImageUnwatermarkTool />;
+        }
         case 'image-crop': {
             const { ImageCropTool } = await import('@/modules/image-crop');
             return <ImageCropTool />;
