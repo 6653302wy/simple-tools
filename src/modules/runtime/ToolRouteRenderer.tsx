@@ -29,6 +29,10 @@ async function renderToolComponent(slug: ToolModuleSlug, language: Language) {
             const { ImageCropTool } = await import('@/modules/image-crop');
             return <ImageCropTool />;
         }
+        case 'xhs-unwatermark': {
+            const { XhsUnwatermarkTool } = await import('@/modules/xhs-unwatermark');
+            return <XhsUnwatermarkTool language={language} />;
+        }
         case 'base64': {
             const { Base64Tool } = await import('@/modules/base64');
             return <Base64Tool language={language} />;

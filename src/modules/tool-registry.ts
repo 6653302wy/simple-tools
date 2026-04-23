@@ -7,6 +7,7 @@ export type ToolModuleSlug =
     | 'image-watermark'
     | 'image-unwatermark'
     | 'image-crop'
+    | 'xhs-unwatermark'
     | 'base64'
     | 'json-tools'
     | 'markdown'
@@ -102,6 +103,18 @@ const toolModuleRegistry: ToolModule[] = [
         description: {
             zh: '上传图片后进行裁剪、旋转、缩放，并下载导出结果。',
             en: 'Upload an image, crop it, rotate and zoom it, then download the result.',
+        },
+    },
+    {
+        sort: 29,
+        slug: 'xhs-unwatermark',
+        href: '/xhs-unwatermark',
+        category: 'image',
+        badge: 'XHS',
+        title: { zh: '小红书去水印', en: 'XHS Watermark Remover' },
+        description: {
+            zh: '粘贴小红书分享链接，解析图片、视频和 Live Photo 原始资源。',
+            en: 'Paste an XHS share link and extract original image, video and Live Photo media.',
         },
     },
     {
