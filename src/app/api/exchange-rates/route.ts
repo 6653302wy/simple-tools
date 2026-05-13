@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const BASE_CURRENCY = 'USD';
-const QUOTED_CURRENCIES = ['CNY', 'EUR', 'GBP', 'JPY', 'HKD', 'SGD'];
+const QUOTED_CURRENCIES = ['CNY', 'EUR', 'GBP', 'JPY', 'HKD', 'SGD', 'CAD'];
 
 type FrankfurterResponse = {
     amount?: number;
@@ -40,6 +40,7 @@ export async function GET(_request: NextRequest) {
             JPY: payload.rates?.JPY ?? null,
             HKD: payload.rates?.HKD ?? null,
             SGD: payload.rates?.SGD ?? null,
+            CAD: payload.rates?.CAD ?? null,
         },
     });
 }

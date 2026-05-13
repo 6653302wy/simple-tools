@@ -16,6 +16,8 @@ type TimestampUnit = 'milliseconds' | 'seconds';
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
 const panelClassName = 'rounded-2xl border border-neutral-j bg-fill-a p-4 shadow-[0_16px_40px_rgba(0,54,22,0.08)]';
+const initialTimestamp = 0;
+const initialDate = dayjs(initialTimestamp);
 
 function formatDateTimeInput(value: dayjs.Dayjs) {
     return value.format('YYYY-MM-DD HH:mm');
@@ -73,9 +75,9 @@ function describeRelative(
 export function TimestampConverter() {
     const { t } = useI18n();
     const [timestampUnit, setTimestampUnit] = useState<TimestampUnit>('milliseconds');
-    const [timestampInput, setTimestampInput] = useState(() => String(Date.now()));
-    const [selectedDate, setSelectedDate] = useState(() => dayjs());
-    const [referenceNow, setReferenceNow] = useState(() => dayjs());
+    const [timestampInput, setTimestampInput] = useState(() => String(initialTimestamp));
+    const [selectedDate, setSelectedDate] = useState(() => initialDate);
+    const [referenceNow, setReferenceNow] = useState(() => initialDate);
     const [browserTimezone, setBrowserTimezone] = useState('UTC');
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const timestampUnitOptions: Array<{ label: string; value: TimestampUnit }> = [
@@ -84,7 +86,12 @@ export function TimestampConverter() {
     ];
 
     useEffect(() => {
-        setReferenceNow(dayjs());
+        const currentDate = dayjs();
+
+        setTimestampUnit('milliseconds');
+        setTimestampInput(String(currentDate.valueOf()));
+        setSelectedDate(currentDate);
+        setReferenceNow(currentDate);
         setBrowserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
     }, []);
 

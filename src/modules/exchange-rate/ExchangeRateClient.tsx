@@ -6,7 +6,7 @@ import { Select } from '@/components/Select';
 import { cn } from '@/libs/utils';
 import { useI18n } from '@/services/i18n';
 
-type CurrencyCode = 'USD' | 'CNY' | 'EUR' | 'GBP' | 'JPY' | 'HKD' | 'SGD';
+type CurrencyCode = 'USD' | 'CNY' | 'EUR' | 'GBP' | 'JPY' | 'HKD' | 'SGD' | 'CAD';
 
 type CurrencyMeta = {
     code: CurrencyCode;
@@ -29,6 +29,7 @@ const currencies: CurrencyMeta[] = [
     { code: 'JPY', symbol: 'JPY' },
     { code: 'HKD', symbol: 'HKD' },
     { code: 'SGD', symbol: 'SGD' },
+    { code: 'CAD', symbol: 'CAD' },
 ];
 
 const fallbackRates: RateMap = {
@@ -39,6 +40,7 @@ const fallbackRates: RateMap = {
     JPY: 150.6,
     HKD: 7.82,
     SGD: 1.35,
+    CAD: 1.37,
 };
 
 const inputClassName =

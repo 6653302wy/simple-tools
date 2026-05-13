@@ -90,6 +90,7 @@ const messages = {
                 JPY: '日元',
                 HKD: '港币',
                 SGD: '新加坡元',
+                CAD: '加拿大元',
             },
         },
         qrcode: {
@@ -608,6 +609,7 @@ console.log(tool);
                 JPY: 'Japanese Yen',
                 HKD: 'Hong Kong Dollar',
                 SGD: 'Singapore Dollar',
+                CAD: 'Canadian Dollar',
             },
         },
         qrcode: {
