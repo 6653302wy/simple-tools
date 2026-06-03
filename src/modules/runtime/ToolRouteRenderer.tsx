@@ -41,6 +41,18 @@ async function renderToolComponent(slug: ToolModuleSlug, language: Language) {
             const { JsonTools } = await import('@/modules/json-tools');
             return <JsonTools language={language} />;
         }
+        case 'yaml-tools': {
+            const { YamlTools } = await import('@/modules/yaml-tools');
+            return <YamlTools language={language} />;
+        }
+        case 'jwt-parser': {
+            const { JwtParserTool } = await import('@/modules/jwt-parser');
+            return <JwtParserTool language={language} />;
+        }
+        case 'color-converter': {
+            const { ColorConverterTool } = await import('@/modules/color-converter');
+            return <ColorConverterTool language={language} />;
+        }
         case 'markdown': {
             const { MarkdownTool } = await import('@/modules/markdown');
             return <MarkdownTool language={language} />;

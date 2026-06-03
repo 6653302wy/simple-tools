@@ -10,6 +10,9 @@ export type ToolModuleSlug =
     | 'xhs-unwatermark'
     | 'base64'
     | 'json-tools'
+    | 'yaml-tools'
+    | 'jwt-parser'
+    | 'color-converter'
     | 'markdown'
     | 'local-network'
     | 'network-speed'
@@ -130,6 +133,18 @@ const toolModuleRegistry: ToolModule[] = [
         },
     },
     {
+        sort: 45,
+        slug: 'jwt-parser',
+        href: '/jwt-parser',
+        category: 'text',
+        badge: 'JWT',
+        title: { zh: 'JWT 解析', en: 'JWT Parser' },
+        description: {
+            zh: '本地解析 JWT Header、Payload 和签名片段，并标出常见时间声明。',
+            en: 'Decode JWT header, payload and signature locally, with common time claims highlighted.',
+        },
+    },
+    {
         sort: 50,
         slug: 'json-tools',
         href: '/json-tools',
@@ -139,6 +154,30 @@ const toolModuleRegistry: ToolModule[] = [
         description: {
             zh: '校验 JSON 合法性，并快速格式化或压缩输出。',
             en: 'Validate JSON and quickly format or compress the output.',
+        },
+    },
+    {
+        sort: 55,
+        slug: 'yaml-tools',
+        href: '/yaml-tools',
+        category: 'text',
+        badge: 'YAML',
+        title: { zh: 'YAML 解析与格式化', en: 'YAML Parser & Formatter' },
+        description: {
+            zh: '校验 YAML 文档，格式化输出，并转换为 JSON 便于调试配置。',
+            en: 'Validate YAML documents, format them, and convert them to JSON for config debugging.',
+        },
+    },
+    {
+        sort: 58,
+        slug: 'color-converter',
+        href: '/color-converter',
+        category: 'text',
+        badge: 'COLOR',
+        title: { zh: '颜色格式转换', en: 'Color Converter' },
+        description: {
+            zh: '在 HEX、RGBA、HSL、HSV 等常用颜色格式之间快速互转。',
+            en: 'Convert quickly between HEX, RGBA, HSL, HSV and other common color formats.',
         },
     },
     {

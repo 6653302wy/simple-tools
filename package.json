@@ -28,7 +28,8 @@
         "react-markdown": "^10.1.0",
         "remark-gfm": "^4.0.1",
         "topojson-client": "^3.1.0",
-        "world-atlas": "^2.0.2"
+        "world-atlas": "^2.0.2",
+        "yaml": "^2.9.0"
     },
     "devDependencies": {
         "@biomejs/biome": "2.3.13",
