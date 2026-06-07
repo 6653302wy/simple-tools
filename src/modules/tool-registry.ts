@@ -7,6 +7,8 @@ export type ToolModuleSlug =
     | 'image-watermark'
     | 'image-unwatermark'
     | 'image-crop'
+    | 'image-background-remover'
+    | 'image-compress'
     | 'xhs-unwatermark'
     | 'base64'
     | 'json-tools'
@@ -17,9 +19,10 @@ export type ToolModuleSlug =
     | 'local-network'
     | 'network-speed'
     | 'http-test'
-    | 'websocket-test';
+    | 'websocket-test'
+    | 'swagger-codegen';
 
-export type ToolCategory = 'text' | 'image' | 'network';
+export type ToolCategory = 'text' | 'image' | 'network' | 'developer';
 export type ToolCategoryFilter = ToolCategory | 'all';
 
 export type ToolModule = {
@@ -32,7 +35,7 @@ export type ToolModule = {
     description: LocalizedText;
 };
 
-export const toolCategoryOrder: ToolCategory[] = ['text', 'image', 'network'];
+export const toolCategoryOrder: ToolCategory[] = ['text', 'image', 'network', 'developer'];
 export const toolCategoryFilterOrder: ToolCategoryFilter[] = ['all', ...toolCategoryOrder];
 
 const toolModuleRegistry: ToolModule[] = [
@@ -106,6 +109,30 @@ const toolModuleRegistry: ToolModule[] = [
         description: {
             zh: '上传图片后进行裁剪、旋转、缩放，并下载导出结果。',
             en: 'Upload an image, crop it, rotate and zoom it, then download the result.',
+        },
+    },
+    {
+        sort: 38,
+        slug: 'image-background-remover',
+        href: '/image-background-remover',
+        category: 'image',
+        badge: 'BG',
+        title: { zh: '图片去除背景', en: 'Image Background Remover' },
+        description: {
+            zh: '上传图片，按背景颜色本地生成透明 PNG，并下载处理结果。',
+            en: 'Upload an image, remove simple backgrounds locally, and download a transparent PNG.',
+        },
+    },
+    {
+        sort: 39,
+        slug: 'image-compress',
+        href: '/image-compress',
+        category: 'image',
+        badge: 'ZIP',
+        title: { zh: '图片压缩', en: 'Image Compressor' },
+        description: {
+            zh: '调整格式、质量和最大边长，本地压缩图片并下载导出。',
+            en: 'Adjust format, quality and max side length to compress images locally for download.',
         },
     },
     {
@@ -220,7 +247,7 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 70,
         slug: 'http-test',
         href: '/http-test',
-        category: 'network',
+        category: 'developer',
         badge: 'HTTP',
         title: { zh: 'HTTP 测试', en: 'HTTP Tester' },
         description: {
@@ -232,12 +259,24 @@ const toolModuleRegistry: ToolModule[] = [
         sort: 80,
         slug: 'websocket-test',
         href: '/websocket-test',
-        category: 'network',
+        category: 'developer',
         badge: 'WS',
         title: { zh: 'WebSocket 测试', en: 'WebSocket Tester' },
         description: {
             zh: '连接 WebSocket 服务，发送消息并查看双向通信日志。',
             en: 'Connect to a WebSocket service, send messages and inspect bidirectional logs.',
+        },
+    },
+    {
+        sort: 100,
+        slug: 'swagger-codegen',
+        href: '/swagger-codegen',
+        category: 'developer',
+        badge: 'SWG',
+        title: { zh: 'Swagger 接口生成', en: 'Swagger Codegen' },
+        description: {
+            zh: '上传 Swagger/OpenAPI JSON 或输入地址，生成 TypeScript Models 和 Apis 文件。',
+            en: 'Upload a Swagger/OpenAPI JSON file or enter a URL to generate TypeScript Models and Apis files.',
         },
     },
 ];
@@ -255,7 +294,7 @@ export function getToolsByCategory(category: ToolCategory) {
 }
 
 export function isToolCategory(value: string | null | undefined): value is ToolCategory {
-    return value === 'text' || value === 'image' || value === 'network';
+    return value === 'text' || value === 'image' || value === 'network' || value === 'developer';
 }
 
 export function normalizeToolCategoryFilter(value: string | null | undefined): ToolCategoryFilter {

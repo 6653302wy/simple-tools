@@ -8,11 +8,12 @@ interface FileDropzoneProps {
     className?: string;
     disabled?: boolean;
     label: string;
+    multiple?: boolean;
     onFilesSelect: (files: FileList) => void;
 }
 
 /** 图片上传拖拽组件 */
-export function FileDropzone({ accept, className, disabled, label, onFilesSelect }: FileDropzoneProps) {
+export function FileDropzone({ accept, className, disabled, label, multiple, onFilesSelect }: FileDropzoneProps) {
     const inputId = useId();
     const [dragging, setDragging] = useState(false);
 
@@ -62,7 +63,14 @@ export function FileDropzone({ accept, className, disabled, label, onFilesSelect
                 className,
             )}
         >
-            <input id={inputId} type="file" accept={accept} className="hidden" onChange={handleChange} />
+            <input
+                id={inputId}
+                type="file"
+                accept={accept}
+                multiple={multiple}
+                className="hidden"
+                onChange={handleChange}
+            />
             {label}
         </label>
     );

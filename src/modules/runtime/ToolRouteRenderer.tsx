@@ -29,6 +29,14 @@ async function renderToolComponent(slug: ToolModuleSlug, language: Language) {
             const { ImageCropTool } = await import('@/modules/image-crop');
             return <ImageCropTool />;
         }
+        case 'image-background-remover': {
+            const { ImageBackgroundRemoverTool } = await import('@/modules/image-background-remover');
+            return <ImageBackgroundRemoverTool />;
+        }
+        case 'image-compress': {
+            const { ImageCompressTool } = await import('@/modules/image-compress');
+            return <ImageCompressTool />;
+        }
         case 'xhs-unwatermark': {
             const { XhsUnwatermarkTool } = await import('@/modules/xhs-unwatermark');
             return <XhsUnwatermarkTool language={language} />;
@@ -72,6 +80,10 @@ async function renderToolComponent(slug: ToolModuleSlug, language: Language) {
         case 'websocket-test': {
             const { WebSocketTestTool } = await import('@/modules/websocket-test');
             return <WebSocketTestTool language={language} />;
+        }
+        case 'swagger-codegen': {
+            const { SwaggerCodegenTool } = await import('@/modules/swagger-codegen');
+            return <SwaggerCodegenTool language={language} />;
         }
         default: {
             const { TimestampConverter } = await import('@/modules/timestamp');
