@@ -7,7 +7,8 @@ import { CopyButton } from '@/components/CopyButton';
 import { FileDropzone } from '@/components/FileDropzone';
 import { useI18n } from '@/services/i18n';
 import { useLeaveConfirm } from '@/services/useLeaveConfirm';
-import { generateSwaggerTypeScriptSdk } from './generator';
+import type { ApiServiceConfig } from './generator';
+import { detectSwaggerServices, generateSwaggerTypeScriptSdk } from './generator';
 
 const inputClassName =
     'mt-2 w-full rounded-lg border border-neutral-j bg-fill-b px-3 py-2.5 text-body-pc-md text-text-e outline-none transition focus:border-primary-400 focus:bg-fill-a';
@@ -230,16 +231,25 @@ export function SwaggerCodegenClient() {
     const [source, setSource] = useState('');
     const [baseUrl, setBaseUrl] = useState('');
     const [requestHeaders, setRequestHeaders] = useState('');
+    const [services, setServices] = useState<ApiServiceConfig[]>([]);
+    const [servicesVisible, setServicesVisible] = useState(false);
+    const [detectedSourceUrl, setDetectedSourceUrl] = useState('');
     const [customRequestFunction, setCustomRequestFunction] = useState('');
     const [models, setModels] = useState('');
     const [apis, setApis] = useState('');
     const [sourceLabel, setSourceLabel] = useState(t('swagger.sourceEmpty'));
     const [status, setStatus] = useState(t('swagger.statusIdle'));
+    const [detectingServices, setDetectingServices] = useState(false);
     const [generating, setGenerating] = useState(false);
     const { setGuard } = useLeaveConfirm();
     const hasResult = Boolean(models || apis);
     const isDirty = Boolean(
-        source.trim() || baseUrl.trim() || requestHeaders.trim() || customRequestFunction.trim() || hasResult,
+        source.trim() ||
+            baseUrl.trim() ||
+            requestHeaders.trim() ||
+            services.length > 0 ||
+            customRequestFunction.trim() ||
+            hasResult,
     );
 
     useEffect(() => {
@@ -271,16 +281,100 @@ export function SwaggerCodegenClient() {
             setSource(fileText);
             setSourceLabel(t('swagger.localFileSource', { name: file.name }));
             setStatus(t('swagger.statusLoaded'));
+            setDetectedSourceUrl('');
+            void detectServicesFromSource(fileText);
         } catch {
             setStatus(t('swagger.fileReadFailed'));
         }
     }
 
-    async function resolveSourceText() {
-        if (!swaggerUrl.trim()) {
-            return source;
+    function getServiceDetectionBaseUrl(sourceUrl = '') {
+        for (const value of [baseUrl.trim(), sourceUrl.trim(), swaggerUrl.trim(), 'https://api.example.com']) {
+            try {
+                return new URL(value).toString();
+            } catch {
+                // Try the next available source.
+            }
         }
 
+        return 'https://api.example.com';
+    }
+
+    function applyDetectedServices(sourceText: string, sourceUrl = '') {
+        const detectedServices = detectSwaggerServices({
+            baseUrl: getServiceDetectionBaseUrl(sourceUrl),
+            sourceUrl,
+            spec: JSON.parse(sourceText),
+        });
+
+        setServices(detectedServices);
+        setServicesVisible(true);
+        setStatus(t('swagger.statusServicesDetected', { services: detectedServices.length }));
+    }
+
+    async function detectServicesFromSource(sourceText: string, sourceUrl = '') {
+        try {
+            setDetectingServices(true);
+            setStatus(t('swagger.statusDetectingServices'));
+            applyDetectedServices(sourceText, sourceUrl);
+        } catch {
+            setServices([]);
+            setServicesVisible(false);
+            setStatus(t('swagger.servicesDetectFailed'));
+        } finally {
+            setDetectingServices(false);
+        }
+    }
+
+    function getServicesForGenerate() {
+        if (!servicesVisible) {
+            return [];
+        }
+
+        return services.map((service, index) => {
+            const baseUrl = service.baseUrl.trim();
+
+            if (!baseUrl) {
+                throw new Error('invalid_services');
+            }
+
+            return {
+                baseUrl,
+                key: service.key?.trim(),
+                name: service.name?.trim() || t('swagger.serviceFallbackName', { index: index + 1 }),
+            };
+        });
+    }
+
+    function updateService(index: number, field: 'baseUrl' | 'name', value: string) {
+        setServices((currentServices) =>
+            currentServices.map((service, serviceIndex) =>
+                serviceIndex === index
+                    ? {
+                          ...service,
+                          [field]: value,
+                      }
+                    : service,
+            ),
+        );
+    }
+
+    function addService() {
+        setServicesVisible(true);
+        setServices((currentServices) => [
+            ...currentServices,
+            {
+                baseUrl: '',
+                name: t('swagger.serviceFallbackName', { index: currentServices.length + 1 }),
+            },
+        ]);
+    }
+
+    function removeService(index: number) {
+        setServices((currentServices) => currentServices.filter((_, serviceIndex) => serviceIndex !== index));
+    }
+
+    async function fetchRemoteSourceText() {
         const params = new URLSearchParams({
             lang: language,
             url: swaggerUrl.trim(),
@@ -292,10 +386,49 @@ export function SwaggerCodegenClient() {
             throw new Error(payload.message || t('swagger.fetchFailed'));
         }
 
-        setSource(payload.content ?? '');
+        return payload.content ?? '';
+    }
+
+    async function handleDetectServicesFromUrl() {
+        const normalizedSwaggerUrl = swaggerUrl.trim();
+
+        if (
+            !normalizedSwaggerUrl ||
+            detectingServices ||
+            (servicesVisible && detectedSourceUrl === normalizedSwaggerUrl)
+        ) {
+            return;
+        }
+
+        try {
+            setDetectingServices(true);
+            setStatus(t('swagger.statusDetectingServices'));
+            const sourceText = await fetchRemoteSourceText();
+
+            setSource(sourceText);
+            setSourceLabel(t('swagger.remoteUrlSource'));
+            applyDetectedServices(sourceText, normalizedSwaggerUrl);
+            setDetectedSourceUrl(normalizedSwaggerUrl);
+        } catch (error) {
+            setServices([]);
+            setServicesVisible(false);
+            setStatus(error instanceof Error ? error.message : t('swagger.servicesDetectFailed'));
+        } finally {
+            setDetectingServices(false);
+        }
+    }
+
+    async function resolveSourceText() {
+        if (!swaggerUrl.trim()) {
+            return source;
+        }
+
+        const sourceText = await fetchRemoteSourceText();
+
+        setSource(sourceText);
         setSourceLabel(t('swagger.remoteUrlSource'));
 
-        return payload.content ?? '';
+        return sourceText;
     }
 
     async function handleGenerate() {
@@ -313,20 +446,25 @@ export function SwaggerCodegenClient() {
             setGenerating(true);
             setStatus(swaggerUrl.trim() ? t('swagger.statusFetching') : t('swagger.statusGenerating'));
             const parsedRequestHeaders = parseRequestHeaders(requestHeaders);
+            const parsedServices = getServicesForGenerate();
             const sourceText = await resolveSourceText();
             const generated = generateSwaggerTypeScriptSdk({
                 baseUrl,
                 customRequestFunction,
                 requestHeaders: parsedRequestHeaders,
+                services: parsedServices,
                 spec: JSON.parse(sourceText),
             });
 
             setModels(generated.models);
             setApis(generated.apis);
+            setServices(generated.services);
+            setServicesVisible(true);
             setStatus(
                 t('swagger.statusGenerated', {
                     models: generated.summary.modelCount,
                     operations: generated.summary.operationCount,
+                    services: generated.summary.serviceCount,
                     title: generated.summary.title,
                 }),
             );
@@ -336,9 +474,11 @@ export function SwaggerCodegenClient() {
             setStatus(
                 error instanceof Error && error.message === 'invalid_headers'
                     ? t('swagger.headersInvalid')
-                    : error instanceof Error
-                      ? error.message
-                      : t('swagger.generateFailed'),
+                    : error instanceof Error && error.message === 'invalid_services'
+                      ? t('swagger.servicesInvalid')
+                      : error instanceof Error
+                        ? error.message
+                        : t('swagger.generateFailed'),
             );
         } finally {
             setGenerating(false);
@@ -350,6 +490,9 @@ export function SwaggerCodegenClient() {
         setSource('');
         setBaseUrl('');
         setRequestHeaders('');
+        setServices([]);
+        setServicesVisible(false);
+        setDetectedSourceUrl('');
         setCustomRequestFunction('');
         setModels('');
         setApis('');
@@ -372,6 +515,17 @@ export function SwaggerCodegenClient() {
                                 value={swaggerUrl}
                                 onChange={(event) => {
                                     setSwaggerUrl(event.target.value);
+                                    setServices([]);
+                                    setServicesVisible(false);
+                                    setDetectedSourceUrl('');
+                                }}
+                                onBlur={() => {
+                                    void handleDetectServicesFromUrl();
+                                }}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                        event.currentTarget.blur();
+                                    }
                                 }}
                                 placeholder={t('swagger.swaggerUrlPlaceholder')}
                             />
@@ -449,6 +603,85 @@ export function SwaggerCodegenClient() {
                                 ) : null}
                             </div>
                         </div>
+                        {servicesVisible ? (
+                            <div className="xl:col-span-2">
+                                <div className="flex items-center justify-between gap-3">
+                                    <label className="text-body-sm text-text-c">{t('swagger.services')}</label>
+                                    <Button
+                                        variant="secondary"
+                                        className="px-3 py-1.5 text-body-sm"
+                                        onClick={addService}
+                                    >
+                                        {t('swagger.addService')}
+                                    </Button>
+                                </div>
+                                <div className="mt-2 overflow-hidden rounded-xl border border-neutral-j bg-fill-a">
+                                    <table className="w-full table-fixed border-collapse">
+                                        <thead className="bg-fill-b text-left text-body-sm text-text-c">
+                                            <tr>
+                                                <th className="w-[28%] border-r border-neutral-j px-3 py-2.5 font-semibold">
+                                                    {t('swagger.serviceName')}
+                                                </th>
+                                                <th className="px-3 py-2.5 font-semibold">
+                                                    {t('swagger.serviceBaseUrl')}
+                                                </th>
+                                                <th className="w-20 px-3 py-2.5 font-semibold">
+                                                    {t('swagger.serviceAction')}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {services.length > 0 ? (
+                                                services.map((service, index) => (
+                                                    <tr
+                                                        className="border-t border-neutral-j text-body-pc-md text-text-e"
+                                                        key={`${service.key ?? 'service'}-${index}`}
+                                                    >
+                                                        <td className="border-r border-neutral-j">
+                                                            <input
+                                                                className="w-full bg-transparent px-3 py-2.5 outline-none transition focus:bg-fill-b"
+                                                                value={service.name ?? ''}
+                                                                onChange={(event) => {
+                                                                    updateService(index, 'name', event.target.value);
+                                                                }}
+                                                                placeholder={t('swagger.serviceNamePlaceholder')}
+                                                            />
+                                                        </td>
+                                                        <td className="border-r border-neutral-j">
+                                                            <input
+                                                                className="w-full bg-transparent px-3 py-2.5 outline-none transition focus:bg-fill-b"
+                                                                value={service.baseUrl}
+                                                                onChange={(event) => {
+                                                                    updateService(index, 'baseUrl', event.target.value);
+                                                                }}
+                                                                placeholder={t('swagger.serviceBaseUrlPlaceholder')}
+                                                            />
+                                                        </td>
+                                                        <td className="px-2 py-1.5">
+                                                            <Button
+                                                                variant="plain"
+                                                                className="px-2 py-1 text-body-sm text-error"
+                                                                onClick={() => {
+                                                                    removeService(index);
+                                                                }}
+                                                            >
+                                                                {t('swagger.removeService')}
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr className="border-t border-neutral-j">
+                                                    <td className="px-3 py-4 text-body-sm text-text-d" colSpan={3}>
+                                                        {t('swagger.emptyServices')}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </div>
 

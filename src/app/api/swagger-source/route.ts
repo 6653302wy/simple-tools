@@ -5,6 +5,7 @@ import { translate } from '@/services/i18n/messages';
 export const dynamic = 'force-dynamic';
 
 const MAX_SWAGGER_BYTES = 1024 * 1024 * 2;
+const SWAGGER_URL_PATTERNS = [/(?:url|configUrl)\s*:\s*["']([^"']+)["']/g, /"(?:url|configUrl)"\s*:\s*"([^"]+)"/g];
 
 async function readLimitedText(response: Response) {
     if (!response.body) {
@@ -46,6 +47,76 @@ async function readLimitedText(response: Response) {
     return new TextDecoder().decode(merged);
 }
 
+function isSwaggerSpecDocument(content: string) {
+    try {
+        const parsed = JSON.parse(content) as unknown;
+
+        return Boolean(
+            parsed && typeof parsed === 'object' && ('paths' in parsed || 'openapi' in parsed || 'swagger' in parsed),
+        );
+    } catch {
+        return false;
+    }
+}
+
+function decodeSwaggerUrl(value: string) {
+    return value
+        .replace(/\\\//g, '/')
+        .replace(/\\u002f/gi, '/')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .trim();
+}
+
+function extractSwaggerJsonUrls(content: string, baseUrl: URL) {
+    const urls = new Set<string>();
+
+    for (const pattern of SWAGGER_URL_PATTERNS) {
+        pattern.lastIndex = 0;
+
+        for (const match of content.matchAll(pattern)) {
+            const rawUrl = decodeSwaggerUrl(match[1] ?? '');
+
+            if (!rawUrl || rawUrl.startsWith('data:') || rawUrl.includes('{')) {
+                continue;
+            }
+
+            try {
+                const resolvedUrl = new URL(rawUrl, baseUrl);
+
+                if (['http:', 'https:'].includes(resolvedUrl.protocol)) {
+                    urls.add(resolvedUrl.toString());
+                }
+            } catch {
+                // Ignore malformed Swagger UI entries and continue scanning.
+            }
+        }
+    }
+
+    return [...urls].sort((left, right) => {
+        const leftLooksJson = /(?:openapi|swagger|api-docs|doc\.json|\.json)(?:[?#/]|$)/i.test(left);
+        const rightLooksJson = /(?:openapi|swagger|api-docs|doc\.json|\.json)(?:[?#/]|$)/i.test(right);
+
+        return Number(rightLooksJson) - Number(leftLooksJson);
+    });
+}
+
+async function fetchSwaggerText(url: URL) {
+    const upstream = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+            Accept: 'application/json, application/vnd.oai.openapi+json, text/html, text/plain',
+        },
+        signal: AbortSignal.timeout(15000),
+    });
+
+    if (!upstream.ok) {
+        throw new Error('fetch_failed');
+    }
+
+    return readLimitedText(upstream);
+}
+
 export async function GET(request: NextRequest) {
     const language = isLanguage(request.nextUrl.searchParams.get('lang'))
         ? (request.nextUrl.searchParams.get('lang') as Language)
@@ -69,21 +140,27 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const upstream = await fetch(targetUrl, {
-            cache: 'no-store',
-            headers: {
-                Accept: 'application/json, application/vnd.oai.openapi+json, text/plain',
-            },
-            signal: AbortSignal.timeout(15000),
-        });
+        const content = await fetchSwaggerText(targetUrl);
 
-        if (!upstream.ok) {
-            return Response.json({ message: translate(language, 'api.swaggerFetchFailed') }, { status: 400 });
+        if (isSwaggerSpecDocument(content)) {
+            return Response.json({ content });
         }
 
-        const content = await readLimitedText(upstream);
+        for (const jsonUrl of extractSwaggerJsonUrls(content, targetUrl).slice(0, 8)) {
+            try {
+                const jsonContent = await fetchSwaggerText(new URL(jsonUrl));
 
-        return Response.json({ content });
+                if (isSwaggerSpecDocument(jsonContent)) {
+                    return Response.json({ content: jsonContent });
+                }
+            } catch (candidateError) {
+                if (candidateError instanceof Error && candidateError.message === 'too_large') {
+                    throw candidateError;
+                }
+            }
+        }
+
+        return Response.json({ message: translate(language, 'api.swaggerFetchFailed') }, { status: 400 });
     } catch (error) {
         const message =
             error instanceof Error && error.message === 'too_large'
