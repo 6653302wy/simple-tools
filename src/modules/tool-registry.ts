@@ -20,7 +20,8 @@ export type ToolModuleSlug =
     | 'network-speed'
     | 'http-test'
     | 'websocket-test'
-    | 'swagger-codegen';
+    | 'swagger-codegen'
+    | 'command-cheatsheet';
 
 export type ToolCategory = 'text' | 'image' | 'network' | 'developer';
 export type ToolCategoryFilter = ToolCategory | 'all';
@@ -277,6 +278,18 @@ const toolModuleRegistry: ToolModule[] = [
         description: {
             zh: '上传 Swagger/OpenAPI JSON 或输入地址，生成 TypeScript Models 和 Apis 文件。',
             en: 'Upload a Swagger/OpenAPI JSON file or enter a URL to generate TypeScript Models and Apis files.',
+        },
+    },
+    {
+        sort: 110,
+        slug: 'command-cheatsheet',
+        href: '/command-cheatsheet',
+        category: 'developer',
+        badge: 'CMD',
+        title: { zh: '常用命令速查', en: 'Command Cheatsheet' },
+        description: {
+            zh: '按 Linux、Nginx、Docker 等场景查看常用命令并一键复制。',
+            en: 'Browse and copy common Linux, Nginx, Docker and operations commands.',
         },
     },
 ];

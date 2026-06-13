@@ -429,6 +429,16 @@ const messages = {
             apisDescription: '接口调用函数，未填写自定义函数时默认使用 fetch。',
             apisPlaceholder: '生成后的 Apis.ts 会显示在这里',
         },
+        commandCheatsheet: {
+            introTitle: '常用命令速查',
+            introDescription: '集中查看 Linux、Nginx、Docker、Systemd 和网络排查常用命令，按场景筛选并一键复制。',
+            search: '搜索命令',
+            searchPlaceholder: '搜索 linux / nginx / docker / compose / 安装 / 日志',
+            categoryTitle: '命令分类',
+            resultCount: '已匹配 {{count}} 条命令',
+            copyCommand: '复制命令',
+            empty: '没有匹配的命令',
+        },
         jwt: {
             introTitle: 'JWT 解析',
             introDescription: '在浏览器本地解析 JWT Header、Payload 和签名片段，适合排查认证声明和过期时间。',
@@ -1164,6 +1174,17 @@ console.log(tool);
             modelsPlaceholder: 'Generated Models.ts will appear here',
             apisDescription: 'API call functions. Defaults to fetch unless a custom request function is provided.',
             apisPlaceholder: 'Generated Apis.ts will appear here',
+        },
+        commandCheatsheet: {
+            introTitle: 'Command Cheatsheet',
+            introDescription:
+                'Browse common Linux, Nginx, Docker, Systemd and network troubleshooting commands, then copy what you need.',
+            search: 'Search commands',
+            searchPlaceholder: 'Search linux / nginx / docker / compose / install / logs',
+            categoryTitle: 'Categories',
+            resultCount: '{{count}} commands matched',
+            copyCommand: 'Copy command',
+            empty: 'No matching commands',
         },
         jwt: {
             introTitle: 'JWT Parser',

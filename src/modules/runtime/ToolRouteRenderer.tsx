@@ -85,6 +85,10 @@ async function renderToolComponent(slug: ToolModuleSlug, language: Language) {
             const { SwaggerCodegenTool } = await import('@/modules/swagger-codegen');
             return <SwaggerCodegenTool language={language} />;
         }
+        case 'command-cheatsheet': {
+            const { CommandCheatsheetTool } = await import('@/modules/command-cheatsheet');
+            return <CommandCheatsheetTool language={language} />;
+        }
         default: {
             const { TimestampConverter } = await import('@/modules/timestamp');
             return <TimestampConverter />;
