@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef } from 'react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { cn } from '@/libs/utils';
-import { normalizeToolCategoryFilter, toolModules } from '@/modules/tool-registry';
+import { isExternalToolModule, normalizeToolCategoryFilter, toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
 import { resolveLocalizedText } from '@/services/i18n/constant';
 import { buildLocalizedHref, stripLanguagePrefix } from '@/services/i18n/routing';
@@ -58,7 +58,8 @@ export function Sidebar() {
         >
             <nav ref={navRef} className="space-y-3">
                 {visibleTools.map((tool, index) => {
-                    const isActive = normalizedPathname.startsWith(tool.href);
+                    const isExternal = isExternalToolModule(tool);
+                    const isActive = !isExternal && normalizedPathname.startsWith(tool.href);
 
                     return (
                         <button
@@ -68,6 +69,11 @@ export function Sidebar() {
                             aria-label={resolveLocalizedText(language, tool.title)}
                             title={resolveLocalizedText(language, tool.title)}
                             onClick={() => {
+                                if (isExternal) {
+                                    window.open(tool.href, '_blank', 'noopener,noreferrer');
+                                    return;
+                                }
+
                                 if (isActive) {
                                     return;
                                 }

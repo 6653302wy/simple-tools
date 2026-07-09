@@ -23,20 +23,32 @@ export type ToolModuleSlug =
     | 'swagger-codegen'
     | 'command-cheatsheet';
 
-export type ToolCategory = 'text' | 'image' | 'network' | 'developer';
+export type ToolCategory = 'text' | 'image' | 'network' | 'developer' | 'pdf';
 export type ToolCategoryFilter = ToolCategory | 'all';
 
-export type ToolModule = {
+type ToolModuleBase = {
     sort: number;
-    slug: ToolModuleSlug;
-    href: `/${ToolModuleSlug}`;
     category: ToolCategory;
     badge: string;
     title: LocalizedText;
     description: LocalizedText;
 };
 
-export const toolCategoryOrder: ToolCategory[] = ['text', 'image', 'network', 'developer'];
+export type InternalToolModule = ToolModuleBase & {
+    slug: ToolModuleSlug;
+    href: `/${ToolModuleSlug}`;
+    external?: false;
+};
+
+export type ExternalToolModule = ToolModuleBase & {
+    slug: string;
+    href: `http://${string}` | `https://${string}`;
+    external: true;
+};
+
+export type ToolModule = InternalToolModule | ExternalToolModule;
+
+export const toolCategoryOrder: ToolCategory[] = ['text', 'image', 'network', 'developer', 'pdf'];
 export const toolCategoryFilterOrder: ToolCategoryFilter[] = ['all', ...toolCategoryOrder];
 
 const toolModuleRegistry: ToolModule[] = [
@@ -62,6 +74,19 @@ const toolModuleRegistry: ToolModule[] = [
         description: {
             zh: '基于可编辑参考汇率，在常用币种间即时换算。',
             en: 'Convert between common currencies with editable reference rates.',
+        },
+    },
+    {
+        sort: 120,
+        slug: 'pdf-tools',
+        href: 'https://pdf.6653302.xyz/',
+        external: true,
+        category: 'pdf',
+        badge: 'PDF',
+        title: { zh: 'PDF工具', en: 'PDF Tools' },
+        description: {
+            zh: '跳转到 PDF 私有工具站点，处理 PDF 文件。',
+            en: 'Open the private PDF tools site for PDF files.',
         },
     },
     {
@@ -295,19 +320,24 @@ const toolModuleRegistry: ToolModule[] = [
 ];
 
 export const toolModules = [...toolModuleRegistry].sort((previousTool, nextTool) => previousTool.sort - nextTool.sort);
+const internalToolModules = toolModules.filter((tool): tool is InternalToolModule => !tool.external);
 
-export const defaultToolHref = toolModules[0].href;
+export const defaultToolHref = internalToolModules[0].href;
 
 export function getToolModule(slug: ToolModuleSlug) {
-    return toolModules.find((tool) => tool.slug === slug) ?? toolModules[0];
+    return internalToolModules.find((tool) => tool.slug === slug) ?? internalToolModules[0];
 }
 
 export function getToolsByCategory(category: ToolCategory) {
     return toolModules.filter((tool) => tool.category === category);
 }
 
+export function isExternalToolModule(tool: ToolModule): tool is ExternalToolModule {
+    return tool.external === true;
+}
+
 export function isToolCategory(value: string | null | undefined): value is ToolCategory {
-    return value === 'text' || value === 'image' || value === 'network' || value === 'developer';
+    return value === 'text' || value === 'image' || value === 'network' || value === 'developer' || value === 'pdf';
 }
 
 export function normalizeToolCategoryFilter(value: string | null | undefined): ToolCategoryFilter {

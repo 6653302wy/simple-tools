@@ -3,7 +3,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { type FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/Button';
 import { cn } from '@/libs/utils';
-import { defaultToolHref, type ToolModule, toolModules } from '@/modules/tool-registry';
+import { defaultToolHref, isExternalToolModule, type ToolModule, toolModules } from '@/modules/tool-registry';
 import { useI18n } from '@/services/i18n';
 import { LANGUAGE_OPTIONS, resolveLocalizedText } from '@/services/i18n/constant';
 import { buildLocalizedHref, stripLanguagePrefix } from '@/services/i18n/routing';
@@ -89,6 +89,12 @@ export const Header: FunctionComponent = () => {
         setQuery('');
         setActiveIndex(-1);
         setNavigationMode('pointer');
+
+        if (isExternalToolModule(tool)) {
+            window.open(tool.href, '_blank', 'noopener,noreferrer');
+            return;
+        }
+
         const nextHref = buildLocalizedHref(language, tool.href);
 
         if (normalizedPathname.startsWith(tool.href)) {
@@ -184,7 +190,8 @@ export const Header: FunctionComponent = () => {
                                 {filteredTools.length ? (
                                     <div className="max-h-80 space-y-1 overflow-y-auto">
                                         {filteredTools.map((tool, index) => {
-                                            const isActive = normalizedPathname.startsWith(tool.href);
+                                            const isActive =
+                                                !isExternalToolModule(tool) && normalizedPathname.startsWith(tool.href);
                                             const isHighlighted = index === activeIndex;
 
                                             return (

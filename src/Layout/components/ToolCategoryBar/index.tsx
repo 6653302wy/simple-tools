@@ -14,6 +14,7 @@ const categoryLabels: Record<ToolCategoryFilter, LocalizedText> = {
     image: { zh: '图片工具', en: 'Image Tools' },
     network: { zh: '网络工具', en: 'Network Tools' },
     developer: { zh: '开发工具', en: 'Developer Tools' },
+    pdf: { zh: 'PDF工具', en: 'PDF Tools' },
 };
 
 export function ToolCategoryBar() {
